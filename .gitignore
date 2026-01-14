@@ -1,0 +1,449 @@
+###################
+# IDEs & Editors
+###################
+
+# JetBrains IDEs (IntelliJ IDEA, WebStorm, PyCharm, PhpStorm, etc.)
+.idea/
+*. iml
+*. iws
+*. ipr
+out/
+.idea_modules/
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+. history/
+
+# Visual Studio
+. vs/
+*. suo
+*.user
+*.userosscache
+*.sln. docstates
+*.userprefs
+*. pidb
+*.suo
+*.csproj. user
+*.vbproj.user
+*.vcxproj.user
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Sublime Text
+*. sublime-project
+*.sublime-workspace
+.sublime-project
+
+# Vim
+*. swp
+*.swo
+*~
+. *. sw? 
+Session. vim
+
+# Emacs
+*~
+\#*\#
+/. emacs.desktop
+/.emacs.desktop.lock
+*. elc
+auto-save-list
+tramp
+.\#*
+
+# Atom
+. atom/
+
+# Eclipse
+.classpath
+.project
+.settings/
+*. launch
+. metadata/
+.recommenders/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Xcode
+xcuserdata/
+*. xcworkspace
+*.xcodeproj
+! *. xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+*. xccheckout
+*.moved-aside
+*.xcuserstate
+DerivedData/
+*. hmap
+*.ipa
+*. dSYM. zip
+*. dSYM
+
+# Android Studio
+.gradle/
+local.properties
+*. apk
+*.ap_
+*.aab
+captures/
+. externalNativeBuild
+. cxx/
+
+###################
+# Operating Systems
+###################
+
+# macOS
+.DS_Store
+. AppleDouble
+.LSOverride
+Icon
+._*
+. DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+. VolumeIcon.icns
+. com.apple.timemachine. donotpresent
+. AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db: encryptable
+ehthumbs. db
+ehthumbs_vista.db
+*. stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*. cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+. Trash-*
+. nfs*
+
+###################
+# Languages & Frameworks
+###################
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error. log*
+lerna-debug.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.env
+.env.local
+.env. development. local
+.env.test.local
+.env.production.local
+.cache
+.parcel-cache
+.next/
+out/
+.nuxt/
+dist/
+. cache/
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+. tern-port
+.vscode-test
+
+# Python
+__pycache__/
+*.py[cod]
+*$py. class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*. manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+*. mo
+*.pot
+instance/
+.webassets-cache
+. scrapy
+docs/_build/
+target/
+.ipynb_checkpoints
+profile_default/
+ipython_config.py
+.python-version
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv. bak/
+.spyderproject
+.spyproject
+. ropeproject
+/site
+. mypy_cache/
+.dmypy.json
+dmypy. json
+.pyre/
+
+# Ruby
+*. gem
+*. rbc
+/. config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+.dat
+.repl_history
+build/
+*.bridgesupport
+build-iPhoneOS/
+build-iPhoneSimulator/
+. bundle
+vendor/bundle
+. byebug_history
+. rvmrc
+/. yardoc/
+/_yardoc/
+/doc/
+/rdoc/
+
+# Java
+*.class
+*.log
+*.ctxt
+. mtj. tmp/
+*. jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*. rar
+hs_err_pid*
+
+# Go
+*. exe
+*.exe~
+*.dll
+*.so
+*. dylib
+*.test
+*.out
+go.work
+vendor/
+
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk
+*. pdb
+
+# PHP
+/vendor/
+composer.phar
+composer.lock
+. phpunit.result.cache
+
+# C/C++
+*.d
+*.slo
+*.lo
+*.o
+*.obj
+*.gch
+*.pch
+*.so
+*. dylib
+*.dll
+*.mod
+*.smod
+*.lai
+*.la
+*.a
+*. lib
+*.exe
+*.out
+*.app
+
+# . NET
+[Dd]ebug/
+[Rr]elease/
+*. dll
+*.exe
+*.pdb
+*.cache
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+###################
+# Build Tools
+###################
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release. properties
+dependency-reduced-pom.xml
+buildNumber.properties
+. mvn/timing. properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+. gradle/
+build/
+!gradle-wrapper.jar
+
+# Webpack
+. webpack/
+
+###################
+# Databases
+###################
+
+*. sqlite
+*.sqlite3
+*.db
+
+###################
+# Logs & Temporary Files
+###################
+
+*. log
+*.tmp
+*.temp
+*.bak
+*.swp
+*. swo
+*~
+
+###################
+# Package Managers
+###################
+
+# Composer
+/vendor/
+
+# CocoaPods
+Pods/
+*. xcworkspace
+
+# Carthage
+Carthage/Build/
+
+###################
+# Secrets & Credentials
+###################
+
+. env
+.env.local
+.env.*. local
+*. pem
+*.key
+*.cert
+*.p12
+. secrets/
+secrets.yml
+.credentials
+
+###################
+# Coverage & Testing
+###################
+
+coverage/
+*. lcov
+. nyc_output/
+htmlcov/
+junit.xml
+
+###################
+# Miscellaneous
+###################
+
+# Backup files
+*. backup
+*.old
+
+# Compressed files (if generated)
+# *.zip
+# *.gz
+# *.7z
+
+# Documentation build
+docs/_build/
+site/
