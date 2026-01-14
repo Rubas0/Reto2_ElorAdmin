@@ -1,50 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { User } from '../modelos/user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  currentUser: User | null = null;
+  private _isLoggedIn = false;
+  private _user: any = null;
 
   constructor(private http: HttpClient) {}
 
-  // Lógica de login
-  async login(username: string, password: string): Promise<boolean> {
-    // Aquí deberías cifrar la password con clave pública antes de enviar (pendiente)
-    try {
-      const response: any = await this.http.post('/api/usuarios/login', { username, password }).toPromise();
-      if (response && response.token) {
-        // Guarda token y usuario en localStorage
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
-        this.currentUser = response.user;
-        return true;
-      }
-    } catch {
-      //
-    }
-    return false;
+  login(username: string, password: string) {
+    // Simulate an HTTP POST request to authenticate the user
+    return this.http.post<any>('http://localhost:3000/api/login', { usuario: username, password: password });
+
   }
 
-  // Obtener rol del usuario logueado
-  getRole(): string | null {
-    if (this.currentUser) return this.currentUser.rol;
-    const userString = localStorage.getItem('user');
-    if (userString) {
-      const user = JSON.parse(userString);
-      this.currentUser = user;
-      return user.rol;
-    }
-    return null;
-  }
-
-  isLogged(): boolean {
-    return !!localStorage.getItem('token');
+  setLoggedIn(user: any) {
+    this._isLoggedIn = true;
+    this._user = user;
   }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    this.currentUser = null;
+    this._isLoggedIn = false;
+    this._user = null;
+  }
+
+  isAuthenticated(): boolean {
+    return this._isLoggedIn;
   }
 }
