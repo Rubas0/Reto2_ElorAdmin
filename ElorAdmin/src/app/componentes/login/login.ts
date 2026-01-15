@@ -18,24 +18,43 @@ export class LoginComponent {
 
   constructor(private auth: AuthService, private router: Router) {}
 
-  login() {
-    if (!this.username || !this.password) {
-      this.error = 'Introduce usuario y contraseña';
-      return;
-    }
-    this.auth.login(this.username, this.password).subscribe({
-      next: (resp) => {
-        if (resp.success) {
-          this.auth.setLoggedIn(resp.usuario);
-          this.error = '';
-          this.router.navigate(['/home']);
-        } else {
-          this.error = 'Login incorrecto';
-        }
-      },
-      error: (err) => {
-        this.error = err.error?.error || 'Error al conectar';
-      }
-    });
+login() {
+  if (!this.username || !this.password) {
+    this.error = 'Introduce usuario y contraseña';
+    return;
   }
+  this.auth.login(this.username, this.password).subscribe({
+    next: (resp) => {
+      if (resp.success) {
+        this.auth.setLoggedIn(resp.usuario);
+        this.error = '';
+
+        // Redirección por rol:
+        switch (resp.usuario.rol) {
+          case 'god':
+            this.router.navigate(['/god']);
+            break;
+          case 'administrador':
+          case 'admin':
+            this.router.navigate(['/admins']);
+            break;
+          case 'profesor':
+            this.router.navigate(['/home']); // o /profesor si tienes
+            break;
+          case 'alumno':
+            this.router.navigate(['/home']); // o /alumno si tienes
+            break;
+          default:
+            this.router.navigate(['/home']);
+        }
+
+      } else {
+        this.error = 'Login incorrecto';
+      }
+    },
+    error: (err) => {
+      this.error = err.error?.error || 'Error al conectar';
+    }
+  });
+}
 }

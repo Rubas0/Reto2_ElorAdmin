@@ -10,7 +10,7 @@ export class AuthService {
 
   login(username: string, password: string) {
     // Simulate an HTTP POST request to authenticate the user
-    return this.http.post<any>('http://localhost:3000/api/login', { usuario: username, password: password });
+    return this.http.post<any>('http://localhost:3000/api/login', { username: username, password: password });
 
   }
 
