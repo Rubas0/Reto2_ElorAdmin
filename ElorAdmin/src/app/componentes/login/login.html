@@ -1,10 +1,58 @@
-<div class="login-container">
-  <h2>Login</h2>
-  <form (ngSubmit)="login()" #loginForm="ngForm">
-    <input [(ngModel)]="username" name="username" required placeholder="Usuario" />
-    <input type="password" [(ngModel)]="password" name="password" required placeholder="Contraseña" />
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="brand">
+      <h1 class="brand-title">Bienvenido/a a ElorAdmin</h1>
+      <p class="brand-sub">Accede de forma segura al panel de administración</p>
+    </div>
 
-    <button type="submit">Entrar</button>
-    <div class="error" *ngIf="error">{{error}}</div>
-  </form>
+    <form (ngSubmit)="login()" #loginForm="ngForm" novalidate>
+      <div class="field">
+        <label for="username">Usuario</label>
+        <input
+          id="username"
+          [(ngModel)]="username"
+          name="username"
+          required
+          type="text"
+          placeholder="p.ej. adminuser"
+          [class.invalid]="submitted && !username"
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <div class="password-group">
+          <input
+            id="password"
+            [(ngModel)]="password"
+            name="password"
+            required
+            [type]="showPassword ? 'text' : 'password'"
+            placeholder="Tu contraseña"
+            [class.invalid]="submitted && !password"
+            autocomplete="current-password"
+          />
+          <button type="button" class="eye-btn" (click)="togglePassword()" aria-label="Mostrar u ocultar contraseña">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path [attr.d]="showPassword ? eyeOffPath : eyePath" fill="currentColor"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn-primary" [disabled]="loading">Entrar</button>
+        <a class="link" (click)="forgotPassword()">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <div class="error" *ngIf="error">{{ error }}</div>
+      <div class="hint">¿No tienes acceso? Solicítalo a Secretaría.</div>
+    </form>
+  </div>
+
+  <footer class="login-footer">
+    <small>© CIFP Elorrieta-Erreka Mari LHII</small>
+    <small>Contacto: secretaria@elorrieta.eus</small>
+  </footer>
 </div>

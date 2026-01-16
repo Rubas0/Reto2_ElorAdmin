@@ -1,59 +1,40 @@
-# ElorAdmin
+# ElorAdmin — Panel de administración del Framework educativo
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.5.
+Una aplicación web en Angular para gestionar usuarios y reuniones del CIFP Elorrieta-Errekamari. Diseñada para ser clara, segura, responsive y multiidioma.
 
-## Development server
+• Roles: God, Administradores, Profesores, Alumnos  
+• Home: métricas rápidas (alumnos, profesores, reuniones de hoy)  
+• CRUD: alta/edición/borrado de usuarios (con restricciones para God/administradores)  
+• Búsqueda: por nombre, apellidos y tipo_id  
+• Reuniones: filtros DTITUC → DTERRE → DMUNIC, tabla paginada, detalle con mapa (Mapbox)  
+• Seguridad: password cifrado por Clave Pública en tránsito; buenas prácticas de rutas protegidas (Guards)  
+• UX: responsive (Bootstrap), 3 idiomas (eu/es/en), aspecto profesional acorde a identidad del centro
 
-To start a local development server, run:
+## Stack y arquitectura
+- Angular + TypeScript + RxJS
+- Bootstrap + iconografía
+- Mapbox en componente de detalle de reuniones
+- MySQL (XAMPP) y JSON de apoyo para catálogos/centros
+- Módulos: Auth, Administradores, Profesores, Alumnos, Reuniones, Core (interceptores/guards), Shared (componentes reutilizables)
+- Patrón de servicios (HttpClient) y guards por ruta principal; manejo de estados y errores con observables
 
-```bash
-ng serve
-```
+## Inicio rápido
+1) Requisitos: Node LTS, Angular CLI, XAMPP MySQL activo  
+2) Configura endpoints y claves en `environment.*` (API/BD y mapa)  
+3) `npm install`  
+4) `ng serve` → abre http://localhost:4200 (login como vista por defecto)
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Aprendizajes clave
+- Diseño de rutas y protección granular con Guards
+- Internacionalización del componente de reuniones (eu/es/en) y textos en toda la app
+- Integración de mapas y datos geográficos (Mapbox + JSON) con filtros jerárquicos
+- UX responsive y accesible; paginación y búsqueda eficientes
+- Flujo seguro: cifrado de credenciales, manejo de errores y códigos HTTP
 
-## Code scaffolding
+## Calidad y mantenimiento
+- Estructura modular, servicios desacoplados y componentes reutilizables
+- Naming significativo, eliminación de código muerto y DRY
+- Documentación mínima orientada a despliegue y soporte
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+---
+ElorAdmin es el pilar de administración del Framework educativo, conectando la gestión con una experiencia moderna, segura y didáctica.

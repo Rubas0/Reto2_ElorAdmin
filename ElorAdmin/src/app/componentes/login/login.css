@@ -1,25 +1,164 @@
-.login-container {
-  max-width: 350px;
-  margin: 100px auto;
-  padding: 2em;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: #fff;
+:root {
+  /* Paleta corporativa Elorrieta-Erreka Mari LHII */
+  --primary-start: #28235D; /* Azul corporativo oscuro del logo del centro*/
+  --primary-end: #0093AA;   /* Azul claro corporativo del logo del centro*/
+  --primary-ink: #fff;
+  --bg: #f6f8fb;
+  --card: #ffffff;
+  --ink: #23263b;
+  --muted: #6b7280;
+  --error: #e53935;
+  --field: #ececf6;
 }
 
-input {
-  display: block;
-  width: 100%;
-  margin-bottom: 1em;
-  padding: 8px;
+* { box-sizing: border-box; }
+
+.login-wrap {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--primary-start) 0%, var(--primary-end) 100%);
+  padding: 2rem 1rem;
 }
 
-button {
-  padding: 8px 16px;
+.login-card {
   width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(40,35,93,0.14);
+  padding: 2.5rem 1.5rem 2rem 1.5rem;
+  margin: 0 auto;
 }
+
+.brand {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.brand-logo {
+  height: 64px;
+  margin-bottom: 0.5rem;
+}
+.brand-title {
+  font-size: 1.35rem;
+  color: var(--primary-start);
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+.brand-sub {
+  color: var(--muted);
+  margin-top: 0.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.field { margin-top: 1.1rem; }
+.field label {
+  display: inline-block;
+  font-size: 0.97rem;
+  color: var(--muted);
+  margin-bottom: 0.32rem;
+}
+.field input {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 0;
+  outline: none;
+  border-radius: 14px;
+  background: var(--field);
+  color: var(--ink);
+  font-size: 1.07rem;
+  transition: box-shadow 0.18s ease;
+}
+.field input:focus {
+  box-shadow: 0 0 0 2.5px var(--primary-end);
+}
+.field input.invalid {
+  box-shadow: 0 0 0 2.5px var(--error);
+}
+
+.password-group {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+}
+.eye-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  border: 0;
+  background: var(--field);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color .15s;
+}
+.eye-btn:hover { color: var(--primary-end); }
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-top: 1.35rem;
+}
+.btn-primary {
+  flex: 1;
+  padding: 0.95rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary-start), var(--primary-end));
+  color: var(--primary-ink);
+  font-weight: 700;
+  font-size: 1.07rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.05s ease, filter 0.23s ease;
+  box-shadow: 0 2px 10px 0 rgba(40,35,93, 0.08);
+}
+.btn-primary:disabled { filter: grayscale(0.3) opacity(0.8); cursor: default; }
+.btn-primary:active { transform: scale(0.99); }
+
+.link {
+  color: var(--primary-end);
+  font-size: 0.93rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color .15s;
+}
+.link:hover { color: var(--primary-start); }
 
 .error {
-  color: #b00;
-  margin-top: 0.5em;
+  margin-top: 0.85rem;
+  color: var(--error);
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+}
+.hint {
+  color: var(--muted);
+  font-size: 0.90rem;
+  text-align: center;
+  margin-top: 0.50rem;
+  margin-bottom: -0.4rem;
+  font-style: italic;
+}
+
+.login-footer {
+  display: grid;
+  place-items: center;
+  gap: 0.15rem;
+  margin-top: 1.2rem;
+  color: #d7dde7;
+  font-size: 0.85rem;
+  letter-spacing: .2px;
+}
+
+/* Responsive mejorado */
+@media (max-width: 440px) {
+  .login-card { padding: 1.1rem; }
+  .brand-title { font-size: 1.09rem; }
 }

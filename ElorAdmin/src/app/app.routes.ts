@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './componentes/login/login';
 import { Home } from './componentes/home/home';
-import { God } from './componentes/god/god'; // Crea este después
-import { Admins } from './componentes/admins/admins'; // Crea este después
+import { God } from './componentes/god/god'; 
+import { Admins } from './componentes/admins/admins';
 
 import { authGuard } from './guards/auth.guard';
 
