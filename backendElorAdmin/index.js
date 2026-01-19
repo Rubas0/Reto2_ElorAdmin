@@ -190,7 +190,6 @@ app.get('/', (req, res) => {
 
 
 // LOGIN
-// LOGIN
 app.post('/api/login', (req, res) => {
   console.log('POST /api/login - body:', req.body);
   const { username, password } = req.body || {};
@@ -252,33 +251,59 @@ app.get('/api/totales', (req, res) => {
   });
 });
 
-// Listado usuarios (con filtro rol opcional)
+// Listado usuarios con filtro rol y búsqueda por nombre/apellidos (q)
 app.get('/api/usuarios', (req, res) => {
-  const rol = req.query.rol;
+  const rolSolicitante = requesterRole(req); // 'god' | 'admin' | ...
+  const rolFiltro = (req.query.rol || '').trim().toLowerCase(); // 'profesor' | 'alumno' | 'admin' | 'god'
+  const q = (req.query.q || '').trim(); // término de búsqueda opcional
+
+  // Admin no puede listar admins ni god
+  if (rolSolicitante === 'admin' && (rolFiltro === 'admin' || rolFiltro === 'god')) {
+    return res.status(403).json({ error: 'Solo GOD puede listar administradores' });
+  }
+
   let sql = `
     SELECT u.id, u.username, u.nombre, u.apellidos, u.email, u.tipo_id, t.name AS rol
     FROM users u
     LEFT JOIN tipos t ON u.tipo_id = t.id
   `;
   const params = [];
-  if (rol) {
-    sql += ' WHERE t.name = ?';
-    params.push(rol);
+
+  const where = [];
+  if (rolFiltro) {
+    where.push('LOWER(t.name) = ?');
+    params.push(rolFiltro);
   }
+  if (q) {
+    where.push('(LOWER(u.nombre) LIKE ? OR LOWER(u.apellidos) LIKE ? OR LOWER(u.username) LIKE ?)');
+    const like = `%${q.toLowerCase()}%`;
+    params.push(like, like, like);
+  }
+  if (where.length) {
+    sql += ' WHERE ' + where.join(' AND ');
+  }
+  sql += ' ORDER BY u.apellidos ASC, u.nombre ASC';
+
   db.query(sql, params, (err, results) => {
     if (err) return res.status(500).json({ error: 'Error al listar usuarios' });
     res.json(results);
   });
 });
 
-// Alta usuario
+// Alta usuario (solo GOD puede crear admins/god)
 app.post('/api/usuarios', (req, res) => {
+  const rolSolicitante = requesterRole(req);
   const { username, nombre, apellidos, email, password, rol } = req.body || {};
   if (!username || !nombre || !apellidos || !email || !password || !rol) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
   const tipo_id = rol === 'god' ? 1 : rol === 'admin' || rol === 'administrador' ? 2 : rol === 'profesor' ? 3 : rol === 'alumno' ? 4 : null;
   if (!tipo_id) return res.status(400).json({ error: 'Rol no válido' });
+
+  // Solo GOD puede crear admins/god
+  if ((tipo_id === 2 || tipo_id === 1) && rolSolicitante !== 'god') {
+    return res.status(403).json({ error: 'Solo GOD puede crear administradores/god' });
+  }
 
   const passwordHash = hashPassword(password);
   const sql = `
@@ -291,8 +316,14 @@ app.post('/api/usuarios', (req, res) => {
   });
 });
 
-// Editar usuario 
+// Utilidad: rol del solicitante (demo por cabecera)
+function requesterRole(req) {
+  return String(req.headers['x-rol'] || '').trim().toLowerCase();
+}
+
+// Editar usuario (solo GOD puede editar admins/god)
 app.put('/api/usuarios/:id', (req, res) => {
+  const rolSolicitante = requesterRole(req);
   const { nombre, apellidos, email, password, rol } = req.body || {};
   const { id } = req.params;
   if (!id || !nombre || !apellidos || !email || !rol) {
@@ -301,32 +332,52 @@ app.put('/api/usuarios/:id', (req, res) => {
   const tipo_id = rol === 'god' ? 1 : rol === 'admin' || rol === 'administrador' ? 2 : rol === 'profesor' ? 3 : rol === 'alumno' ? 4 : null;
   if (!tipo_id) return res.status(400).json({ error: 'Rol no válido' });
 
-  let sql = 'UPDATE users SET nombre=?, apellidos=?, email=?, tipo_id=?';
-  const params = [nombre, apellidos, email, tipo_id];
-  if (password) {
-    sql += ', password=?';
-    params.push(hashPassword(password));
+  // Solo GOD puede editar admins/god
+  if ((tipo_id === 2 || tipo_id === 1) && rolSolicitante !== 'god') {
+    return res.status(403).json({ error: 'Solo GOD puede editar administradores/god' });
   }
-  sql += ' WHERE id=?';
-  params.push(id);
 
-  db.query(sql, params, (err) => {
-    if (err) return res.status(500).json({ error: 'Error al editar usuario' });
-    res.json({ success: true });
+  // Protección especial goduser
+  db.query('SELECT username FROM users WHERE id=?', [id], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Error al comprobar usuario' });
+    if (results[0]?.username === 'goduser' && rolSolicitante !== 'god') {
+      return res.status(403).json({ error: 'Solo GOD puede editar goduser' });
+    }
+
+    let sql = 'UPDATE users SET nombre=?, apellidos=?, email=?, tipo_id=?';
+    const params = [nombre, apellidos, email, tipo_id];
+    if (password) {
+      sql += ', password=?';
+      params.push(hashPassword(password));
+    }
+    sql += ' WHERE id=?';
+    params.push(id);
+
+    db.query(sql, params, (err2) => {
+      if (err2) return res.status(500).json({ error: 'Error al editar usuario' });
+      res.json({ success: true });
+    });
   });
 });
 
-// Borrar usuario (protegemos goduser)
+// Borrar usuario (solo GOD puede borrar admins/god; nunca goduser)
 app.delete('/api/usuarios/:id', (req, res) => {
+  const rolSolicitante = requesterRole(req);
   const { id } = req.params;
   if (!id) return res.status(400).json({ error: 'ID requerido' });
 
-  db.query('SELECT username FROM users WHERE id=?', [id], (err, results) => {
+  db.query('SELECT username, tipo_id FROM users WHERE id=?', [id], (err, results) => {
     if (err) return res.status(500).json({ error: 'Error al comprobar usuario' });
     if (!results || results.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
-    if (results[0].username === 'goduser') {
+
+    const u = results[0];
+    if (u.username === 'goduser') {
       return res.status(403).json({ error: 'No puedes borrar el usuario god.' });
     }
+    if ((u.tipo_id === 2 || u.tipo_id === 1) && rolSolicitante !== 'god') {
+      return res.status(403).json({ error: 'Solo GOD puede borrar administradores/god.' });
+    }
+
     db.query('DELETE FROM users WHERE id=?', [id], (err2) => {
       if (err2) return res.status(500).json({ error: 'Error al borrar usuario' });
       res.json({ success: true });

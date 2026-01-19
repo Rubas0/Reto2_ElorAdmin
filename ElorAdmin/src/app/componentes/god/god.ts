@@ -35,7 +35,7 @@ export class God implements OnInit {
   }
 
   cargarAdmins() {
-    this.usuarioService.getUsuarios({ rol: 'admin' }).subscribe(res => {
+    this.usuarioService.getUsuarios('admin').subscribe(res => {
       this.admins = res;
     });
   }
@@ -86,7 +86,7 @@ export class God implements OnInit {
       // Si no cambiamos password, evitar enviarla vacía
       const data = { ...this.form, id: this.adminEditId, rol: 'admin' };
       if (!data.password) delete data.password;
-      this.usuarioService.updateUsuario(data).subscribe(() => {
+      this.usuarioService.updateUsuario(this.adminEditId, data).subscribe(() => {
         this.cargarAdmins();
         this.cancelar();
       });
@@ -104,5 +104,6 @@ export class God implements OnInit {
     this.formError = '';
     this.submitted = false;
     this.form = { username: '', nombre: '', apellidos: '', email: '', password: '' };
+    this.adminEditId = null;
   }
 }

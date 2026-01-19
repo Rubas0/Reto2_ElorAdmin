@@ -39,34 +39,32 @@ export class LoginComponent {
     }
     this.loading = true;
 
+    // Llama al servicio de autenticación y maneja la respuesta adecuadamente usando observables. "Normaliza el rol del usuario"
     this.auth.login(this.username, this.password).subscribe({
-      next: (resp) => {
-        this.loading = false;
-        if (resp.success) {
-          this.auth.setLoggedIn(resp.usuario);
+     next: (resp) => {
+  if (resp.success) {
+    this.auth.setLoggedIn(resp.usuario);
+    const rol = String(
+      resp.usuario?.rol ??
+      (resp.usuario?.tipo_id === 1 ? 'god' :
+       resp.usuario?.tipo_id === 2 ? 'admin' :
+       resp.usuario?.tipo_id === 3 ? 'profesor' :
+       resp.usuario?.tipo_id === 4 ? 'alumno' : '')
+    ).toLowerCase();
 
-          // Redirección por rol:
-          switch (resp.usuario.rol) {
-            case 'god':
-              this.router.navigate(['/god']);
-              break;
-            case 'administrador':
-            case 'admin':
-              this.router.navigate(['/admins']);
-              break;
-            case 'profesor':
-              this.router.navigate(['/home']); // cambiar a profesor cuando lo crees
-              break;
-            case 'alumno':
-              this.router.navigate(['/home']); // cambiar a alumno cuando lo crees
-              break;
-            default:
-              this.router.navigate(['/home']);
-          }
-        } else {
-          this.error = 'Login incorrecto';
-        }
-      },
+    if (rol === 'god') {
+      this.router.navigate(['/god']);
+    } else if (rol === 'admin' || rol === 'administrador' || rol === 'administradores' || rol === 'secretaria') {
+      this.router.navigate(['/admins']);
+    } else if (rol === 'profesor') {
+      this.router.navigate(['/home']);
+    } else {
+      this.router.navigate(['/home']);
+    }
+  } else {
+    this.error = 'Login incorrecto';
+  }
+},
       error: (err) => {
         this.loading = false;
         this.error = err.error?.error || 'Error al conectar';

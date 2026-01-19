@@ -1,13 +1,35 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth';
+import { HttpHeaders } from '@angular/common/http';
+import { map } from 'rxjs/operators';
+import { HttpParams } from '@angular/common/http';
+
+// DTO de usuario usado en listados y formularios
+//  DTO -> (Data Transfer Object) es un patrón de diseño que define objetos simples para transferir
+//  datos entre diferentes capas de la aplicación, especialmente entre el frontend y el backend.
+export interface UsuarioDTO {
+  id: number;
+  username: string;
+  nombre: string;
+  apellidos: string;
+  email: string;
+  tipo_id: number;
+  rol: 'god' | 'administrador' | 'admin' | 'profesor' | 'alumno';
+}
 
 @Injectable({ providedIn: 'root' })
 export class Usuario {
 
   private apiUrl = 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private auth: AuthService) {}
+
+   private headers(): HttpHeaders {
+    const rol = String(this.auth.user?.rol || '').toLowerCase();
+    return new HttpHeaders({ 'x-rol': rol });
+  }
 
   // --- Panel God/Admin: Totales ---
   getTotales(): Observable<{alumnos: number, profesores: number, reunionesHoy: number}> {
@@ -15,22 +37,31 @@ export class Usuario {
   }
 
   // --- Listado general de usuarios (parámetros opcionales: rol, filtro, etc) ---
-  getUsuarios(params: any = {}): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/usuarios`, { params });
+  getUsuarios(rol?: string, q?: string): Observable<UsuarioDTO[]> {
+    let params = new HttpParams();
+    if (rol) params = params.set('rol', rol);
+    if (q) params = params.set('q', q);
+    return this.http.get<UsuarioDTO[]>(`${this.apiUrl}/usuarios`, { headers: this.headers(), params });
   }
 
   // --- CRUD administra: Alta ---
-  addUsuario(usuario: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/usuarios`, usuario);
+  addUsuario(body: { username: string; nombre: string; apellidos: string; email: string; rol: string; password: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/usuarios`, body, { headers: this.headers() });
+  }
+
+
+   editarUsuario(id: number, body: { nombre: string; apellidos: string; email: string; rol: string; password?: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/usuarios/${id}`, body, { headers: this.headers() });
   }
 
   // --- CRUD administra: Editar (requiere usuario.id) ---
-  updateUsuario(usuario: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/usuarios/${usuario.id}`, usuario);
+ // Alias para compatibilidad: delega en editarUsuario
+  updateUsuario(id: number, body: { nombre: string; apellidos: string; email: string; rol: string; password?: string }): Observable<any> {
+    return this.editarUsuario(id, body);
   }
 
   // --- CRUD administra: Baja ---
   deleteUsuario(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/usuarios/${id}`);
+    return this.http.delete(`${this.apiUrl}/usuarios/${id}`, { headers: this.headers() });
   }
 }

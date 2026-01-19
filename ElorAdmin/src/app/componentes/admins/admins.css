@@ -1,0 +1,20 @@
+.admins .toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: .75rem;
+}
+.admins .filters {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+}
+.admins .filters input, .admins .filters select {
+  padding: .4rem .6rem;
+}
+.pagination-wrap {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .5rem;
+}
