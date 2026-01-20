@@ -1,4 +1,4 @@
-const { createHash } = require('crypto');
+const { createHash } = require('crypto'); // módulo para hashing
 
 /**
  * Devuelve el hash SHA-1 (hexadecimal, mayúsculas) de la contraseña dada.

@@ -5,6 +5,8 @@ import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../servicios/auth';
 import { Usuario as UsuarioService, UsuarioDTO } from '../../servicios/usuario';
 import { HttpParams } from '@angular/common/http';
+import {JSEncrypt } from 'jsencrypt';
+import { PUBLIC_KEY } from '../../public.key'; 
 
 @Component({
   selector: 'app-usuarios',
@@ -93,6 +95,9 @@ export class Usuarios implements OnInit {
   guardar(): void {
     this.error = '';
 
+    const encryptor = new JSEncrypt();
+    encryptor.setPublicKey(PUBLIC_KEY);
+
     // Validación: sólo GOD en modo manageAdmins puede operar con administradores
     const esAdminRol = this.form.rol === 'administrador';
     if (esAdminRol && !(this.manageAdmins && this.isGod)) {
@@ -100,7 +105,7 @@ export class Usuarios implements OnInit {
       return;
     }
 
-    const body = {
+    let body = {
       username: this.form.username,
       nombre: this.form.nombre,
       apellidos: this.form.apellidos,
@@ -108,6 +113,11 @@ export class Usuarios implements OnInit {
       rol: this.form.rol,
       password: this.form.password
     };
+
+      if (this.form.password) {
+    const encryptedPassword = encryptor.encrypt(this.form.password);
+    body = { ...body, password: encryptedPassword };
+  }
 
     if (!this.form.id) {
       // Alta

@@ -3,6 +3,9 @@ import { AuthService } from '../../servicios/auth';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { JSEncrypt } from 'jsencrypt';
+import { PUBLIC_KEY } from '../../public.key';
+
 
 @Component({
   selector: 'app-login',
@@ -39,32 +42,43 @@ export class LoginComponent {
     }
     this.loading = true;
 
-    // Llama al servicio de autenticación y maneja la respuesta adecuadamente usando observables. "Normaliza el rol del usuario"
-    this.auth.login(this.username, this.password).subscribe({
-     next: (resp) => {
-  if (resp.success) {
-    this.auth.setLoggedIn(resp.usuario);
-    const rol = String(
-      resp.usuario?.rol ??
-      (resp.usuario?.tipo_id === 1 ? 'god' :
-       resp.usuario?.tipo_id === 2 ? 'admin' :
-       resp.usuario?.tipo_id === 3 ? 'profesor' :
-       resp.usuario?.tipo_id === 4 ? 'alumno' : '')
-    ).toLowerCase();
+    const encryptor = new JSEncrypt();
+    encryptor.setPublicKey(PUBLIC_KEY);
 
-    if (rol === 'god') {
-      this.router.navigate(['/god']);
-    } else if (rol === 'admin' || rol === 'administrador' || rol === 'administradores' || rol === 'secretaria') {
-      this.router.navigate(['/admins']);
-    } else if (rol === 'profesor') {
-      this.router.navigate(['/home']);
-    } else {
-      this.router.navigate(['/home']);
+    const encryptedPassword = encryptor.encrypt(this.password);
+    if (!encryptedPassword) {
+      this.loading = false;
+      this.error = 'Error cifrando la contraseña';
+      return;
     }
-  } else {
-    this.error = 'Login incorrecto';
-  }
-},
+
+    // pasamos 2 argumentos (username, passwordCIFRADA)
+    this.auth.login(this.username, encryptedPassword).subscribe({
+      next: (resp) => {
+        this.loading = false;
+        if (resp.success) {
+          this.auth.setLoggedIn(resp.usuario);
+          const rol = String(
+            resp.usuario?.rol ??
+            (resp.usuario?.tipo_id === 1 ? 'god' :
+             resp.usuario?.tipo_id === 2 ? 'admin' :
+             resp.usuario?.tipo_id === 3 ? 'profesor' :
+             resp.usuario?.tipo_id === 4 ? 'alumno' : '')
+          ).toLowerCase();
+
+          if (rol === 'god') {
+            this.router.navigate(['/god']);
+          } else if (rol === 'admin' || rol === 'administrador' || rol === 'administradores' || rol === 'secretaria') {
+            this.router.navigate(['/admins']);
+          } else if (rol === 'profesor') {
+            this.router.navigate(['/home']);
+          } else {
+            this.router.navigate(['/home']);
+          }
+        } else {
+          this.error = 'Login incorrecto';
+        }
+      },
       error: (err) => {
         this.loading = false;
         this.error = err.error?.error || 'Error al conectar';
@@ -73,7 +87,7 @@ export class LoginComponent {
   }
 
   forgotPassword() {
-    // En el futuro: aquí puedes hacer una llamada a tu backend que inicie el proceso real.
+    // En el futuro: Hacer una llamada al backend (index.js) que inicie el proceso real.
     this.error = 'Funcionalidad no implementada, contacta con Secretaría.';
   }
 }

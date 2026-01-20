@@ -31,6 +31,37 @@ Una aplicación web en Angular para gestionar usuarios y reuniones del CIFP Elor
 - UX responsive y accesible; paginación y búsqueda eficientes
 - Flujo seguro: cifrado de credenciales, manejo de errores y códigos HTTP
 
+
+# Módulos extra recomendados para el proyecto
+
+A continuación tienes una breve lista de módulos que deberías instalar para el desarrollo general del backend de este framework educativo, especialmente para funcionalidades de autenticación, seguridad, cifrado y comunicación REST.
+
+Instala todos mediante npm, por ejemplo:
+## Lista recomendada
+
+- **crypto**  
+  Para operaciones de cifrado, generación de claves públicas/privadas y gestión segura de contraseñas.
+  *(En Node.js suele estar incorporado como módulo nativo, pero en proyectos front puede usarse jsencrypt)*
+
+- **jsencrypt**  
+  Permite cifrado RSA de datos en cliente (por ejemplo, para cifrar contraseñas antes de enviarlas).
+
+- **cors**  
+  Middleware para habilitar y configurar CORS en las APIs REST.
+
+- **dotenv**  
+  Permite la gestión de variables de entorno para configuraciones secretas.
+
+- **express**  
+  Framework para crear el servidor REST.
+
+
+## Ejemplo de instalación
+
+```bash
+npm install express cors dotenv jsencrypt bcryptjs nodemailer
+```
+
 ## Calidad y mantenimiento
 - Estructura modular, servicios desacoplados y componentes reutilizables
 - Naming significativo, eliminación de código muerto y DRY

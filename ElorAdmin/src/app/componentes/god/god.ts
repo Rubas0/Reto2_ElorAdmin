@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Usuario } from '../../servicios/usuario';
+import { JSEncrypt } from 'jsencrypt';
+import { PUBLIC_KEY } from '../../public.key';
 
 @Component({
   selector: 'app-god',
@@ -81,6 +83,18 @@ export class God implements OnInit {
       this.formError = 'Rellena todos los campos obligatorios';
       return;
     }
+
+      // Cifrar password 
+  // const encrypt = new JSEncrypt();
+  // encrypt.setPublicKey(PUBLIC_KEY);
+
+  // let data: any = { ...this.form, rol: 'admin' };
+  // if (this.form.password) {
+  //   const encryptedPassword = encrypt.encrypt(this.form.password);
+  //   data.password = encryptedPassword;
+  // } else {
+  //   delete data.password; // si está vacío, no mandes la password
+  // }
 
     if (this.editando && this.adminEditId !== null) {
       // Si no cambiamos password, evitar enviarla vacía

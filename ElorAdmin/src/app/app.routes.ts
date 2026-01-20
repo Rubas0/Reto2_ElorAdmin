@@ -12,11 +12,9 @@ export const routes: Routes = [
   { path: 'god', component: God, canActivate: [authGuard, roleGuard], data: { roles: ['god'] } },
   { path: 'admins', component: Admins, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'god'] } },
   { path: '', pathMatch: 'full', redirectTo: 'login' },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: 'login' } // cualquier otra ruta redirige a login
 ];
 
 
-/*
-(home, god, admins) solo son accesibles si el usuario está autenticado. 
-Si alguien intenta acceder a la raíz de la aplicación, automáticamente va al login.
-*/
+/* (home, god, admins) solo son accesibles si el usuario está autenticado. 
+Si alguien intenta acceder a la raíz de la aplicación, automáticamente va al login.*/
