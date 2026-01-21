@@ -1,0 +1,152 @@
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="display-6">🎓 Mi Panel</h1>
+      <p class="text-muted">Datos personales, horario y reuniones</p>
+    </div>
+  </div>
+
+  <!-- Perfil del alumno -->
+  <div class="card shadow-sm mb-4" *ngIf="alumno">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">👤 Datos Personales</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-3 text-center">
+          <img 
+            [src]="alumno.argazkiaUrl || 'assets/default-avatar. png'" 
+            alt="Foto" 
+            class="rounded-circle img-thumbnail"
+            style="width: 120px; height: 120px; object-fit: cover;"
+          />
+        </div>
+        <div class="col-md-9">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <strong>Nombre:</strong> {{ alumno.nombre }} {{ alumno.apellidos }}
+            </div>
+            <div class="col-md-6">
+              <strong>Email:</strong> {{ alumno.email }}
+            </div>
+            <div class="col-md-6">
+              <strong>DNI:</strong> {{ alumno. dni || '-' }}
+            </div>
+            <div class="col-md-6">
+              <strong>Teléfono:</strong> {{ alumno.telefono1 || '-' }}
+            </div>
+            <div class="col-md-6">
+              <strong>Ciclo:</strong> {{ getNombreCiclo(alumno.ciclo_id) }}
+            </div>
+            <div class="col-md-6">
+              <strong>Curso:</strong> {{ alumno.curso }}º
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Horario -->
+ <table class="table table-bordered table-sm text-center align-middle mb-0" style="min-width:650px;">
+  <thead class="table-light">
+    <tr>
+      <th style="width: 80px;">Hora</th>
+      <th>Lunes</th>
+      <th>Martes</th>
+      <th>Miércoles</th>
+      <th>Jueves</th>
+      <th>Viernes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let tramo of tramos">
+      <th class="bg-light">{{ tramo.nombre }}</th>
+      <td *ngFor="let dia of dias">
+        <ng-container *ngIf="horaEnDia(dia, tramo.hora); else vacio">
+          <strong>{{ horaEnDia(dia, tramo.hora).modulo || horaEnDia(dia, tramo.hora).reunion }}</strong>
+          <div class="small text-muted">
+            {{ horaEnDia(dia, tramo.hora).aula || '' }}
+          </div>
+          <span *ngIf="horaEnDia(dia, tramo.hora).estado"
+                class="badge"
+                [ngClass]="getBadgeClass(horaEnDia(dia, tramo.hora).estado)">
+            {{ horaEnDia(dia, tramo.hora).estado }}
+          </span>
+        </ng-container>
+        <ng-template #vacio>—</ng-template>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+  <!-- Reuniones -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-warning text-dark">
+      <h5 class="mb-0">📅 Mis Reuniones</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Título</th>
+              <th>Profesor</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Aula</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let reunion of reuniones">
+              <td><strong>{{ reunion.titulo }}</strong></td>
+              <td>{{ reunion.profesor?. nombre }} {{ reunion.profesor?.apellidos }}</td>
+              <td>{{ reunion.dia }}</td>
+              <td>{{ reunion.hora }}: 00</td>
+              <td>{{ reunion.aula || '-' }}</td>
+              <td>
+                <span class="badge" [ngClass]="getEstadoBadge(reunion.estado)">
+                  {{ reunion.estado }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="reuniones.length === 0">
+              <td colspan="6" class="text-center text-muted py-4">
+                No tienes reuniones programadas
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div 
+    *ngIf="showToast" 
+    class="toast-container position-fixed top-0 end-0 p-3"
+    style="z-index: 9999"
+  >
+    <div 
+      class="toast show" 
+      [class.bg-success]="toastType === 'success'"
+      [class.bg-danger]="toastType === 'error'"
+      role="alert"
+    >
+      <div class="toast-header text-white" 
+           [class.bg-success]="toastType === 'success'"
+           [class.bg-danger]="toastType === 'error'">
+        <strong class="me-auto">
+          <i class="bi bi-{{ toastType === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill' }}"></i>
+          {{ toastType === 'success' ? 'Éxito' : 'Error' }}
+        </strong>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarToast()"></button>
+      </div>
+      <div class="toast-body text-white">
+        {{ toastMessage }}
+      </div>
+    </div>
+  </div>
+</div>

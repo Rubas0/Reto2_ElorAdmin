@@ -1,94 +1,367 @@
-<div class="container my-3 admins">
-  <h3>
-    {{ isGod ? 'Gestión de Usuarios (incluye Administradores)' : 'Gestión de Usuarios (Secretaría)' }}
-  </h3>
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="display-6">👥 Panel Administrador</h1>
+      <p class="text-muted">Gestión de profesores y alumnos</p>
+    </div>
+  </div>
 
-  <div class="toolbar">
-    <div class="filters">
-      <label>Tipo</label>
-      <select [(ngModel)]="rolFiltro" (change)="cargar()">
-        <option *ngFor="let r of allowedRoles" [value]="r">{{ r }}</option>
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card border-primary">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">👥 Total Alumnos</h6>
+          <h2 class="card-title mb-0">{{ totales.alumnos }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="card border-success">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">👨‍🏫 Total Profesores</h6>
+          <h2 class="card-title mb-0">{{ totales.profesores }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="card border-warning">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2 text-muted">📅 Reuniones Hoy</h6>
+          <h2 class="card-title mb-0">{{ totales.reunionesHoy }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Filtros y acciones -->
+  <div class="row mb-3 align-items-end">
+    <div class="col-12 col-md-3">
+      <label for="tipoFiltro" class="form-label">Filtrar por tipo</label>
+      <select 
+        id="tipoFiltro" 
+        class="form-select" 
+        [(ngModel)]="tipoFiltro" 
+        (change)="onFiltroChange()"
+      >
+        <option value="todos">Todos</option>
+        <option value="profesor">Profesores</option>
+        <option value="alumno">Alumnos</option>
       </select>
-
-      <input [(ngModel)]="q" (keyup.enter)="buscar()" placeholder="Buscar por nombre, apellidos o usuario" />
-      <button class="btn btn-primary btn-sm" (click)="buscar()">Buscar</button>
     </div>
 
-    <button class="btn btn-success btn-sm" (click)="nuevo()">Nuevo {{rolFiltro}}</button>
-  </div>
+    <div class="col-12 col-md-5">
+      <label for="busqueda" class="form-label">Buscar</label>
+      <input
+        type="text"
+        id="busqueda"
+        class="form-control"
+        placeholder="Nombre, apellidos o usuario..."
+        [(ngModel)]="busqueda"
+        (input)="onBusquedaChange()"
+      />
+    </div>
 
-  <div class="alert alert-danger py-1" *ngIf="error">{{error}}</div>
-
-  <div class="table-responsive" *ngIf="!editMode">
-    <table class="table table-striped align-middle">
-      <thead>
-        <tr>
-          <th>Usuario</th>
-          <th>Nombre</th>
-          <th>Apellidos</th>
-          <th>Email</th>
-          <th>Rol</th>
-          <th class="text-end" style="width:160px">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let u of paged">
-          <td>{{u.username}}</td>
-          <td>{{u.nombre}}</td>
-          <td>{{u.apellidos}}</td>
-          <td>{{u.email}}</td>
-          <td>{{u.rol}}</td>
-          <td class="text-end">
-            <button class="btn btn-outline-primary btn-sm me-2" (click)="editar(u)">Editar</button>
-            <button class="btn btn-outline-danger btn-sm" (click)="borrar(u)">Borrar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="pagination-wrap">
-      <button class="btn btn-light btn-sm" [disabled]="page===1" (click)="page=page-1">Anterior</button>
-      <span>Página {{page}}</span>
-      <button class="btn btn-light btn-sm" [disabled]="page*pageSize>=usuarios.length" (click)="page=page+1">Siguiente</button>
-      <span class="ms-auto small text-muted">Resultados: {{usuarios.length}}</span>
+    <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+      <button class="btn btn-success me-2" (click)="nuevoUsuario('profesor')" *ngIf="! showForm">
+        ➕ Nuevo Profesor
+      </button>
+      <button class="btn btn-primary" (click)="nuevoUsuario('alumno')" *ngIf="! showForm">
+        ➕ Nuevo Alumno
+      </button>
     </div>
   </div>
 
-  <div class="card p-3" *ngIf="editMode">
-    <h5 class="mb-2">{{form.id ? 'Editar' : 'Nuevo'}} {{rolFiltro}}</h5>
-    <div class="row g-2">
-      <div class="col-md-6">
-        <label>Usuario</label>
-        <input [(ngModel)]="form.username" class="form-control" />
-      </div>
-      <div class="col-md-6">
-        <label>Email</label>
-        <input [(ngModel)]="form.email" class="form-control" />
-      </div>
-      <div class="col-md-6">
-        <label>Nombre</label>
-        <input [(ngModel)]="form.nombre" class="form-control" />
-      </div>
-      <div class="col-md-6">
-        <label>Apellidos</label>
-        <input [(ngModel)]="form.apellidos" class="form-control" />
-      </div>
-      <div class="col-md-6">
-        <label>Rol</label>
-        <select [(ngModel)]="form.rol" class="form-select">
-          <option value="profesor">Profesor</option>
-          <option value="alumno">Alumno</option>
-          <option *ngIf="isGod" value="administrador">Administrador</option>
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label>Contraseña</label>
-        <input [(ngModel)]="form.password" class="form-control" type="password" placeholder="{{ form.id ? 'Dejar en blanco para no cambiar' : 'Obligatoria' }}" />
+  <!-- Resultados -->
+  <div class="mb-2">
+    <small class="text-muted">
+      Mostrando {{ usuariosFiltrados.length }} de {{ usuarios.length }} usuarios
+    </small>
+  </div>
+
+  <!-- Formulario crear/editar -->
+  <div *ngIf="showForm" class="card shadow-sm mb-4 form-usuario">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="bi bi-{{ editando ? 'pencil-square' : 'person-plus' }}"></i>
+        {{ editando ? 'Editar' : 'Nuevo' }} {{ tipoUsuario === 'profesor' ? 'Profesor' : 'Alumno' }}
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="cancelar()"></button>
+    </div>
+    
+    <div class="card-body p-4">
+      <form (ngSubmit)="guardarUsuario()" #usuarioForm="ngForm">
+        
+        <!-- Credenciales -->
+        <div class="form-section mb-4">
+          <h6 class="form-section-title">🔐 Credenciales de acceso</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="username" class="form-label required">Usuario</label>
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                [(ngModel)]="form.username"
+                name="username"
+                required
+                placeholder="Ej: jperez"
+                [readonly]="editando"
+                [class.is-invalid]="submitted && ! form.username"
+              />
+              <div class="invalid-feedback">El usuario es obligatorio</div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="password" class="form-label" [class.required]="! editando">
+                Contraseña
+                <small class="text-muted" *ngIf="editando">(dejar vacío para no cambiar)</small>
+              </label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                [(ngModel)]="form.password"
+                name="password"
+                [required]="!editando"
+                placeholder="••••••••"
+                [class.is-invalid]="submitted && !editando && !form.password"
+              />
+              <div class="invalid-feedback">La contraseña es obligatoria</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos Personales -->
+        <div class="form-section mb-4">
+          <h6 class="form-section-title">👤 Datos personales</h6>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="nombre" class="form-label required">Nombre</label>
+              <input
+                type="text"
+                class="form-control"
+                id="nombre"
+                [(ngModel)]="form.nombre"
+                name="nombre"
+                required
+                placeholder="Nombre"
+                [class.is-invalid]="submitted && !form.nombre"
+              />
+              <div class="invalid-feedback">El nombre es obligatorio</div>
+            </div>
+
+            <div class="col-md-4">
+              <label for="apellidos" class="form-label required">Apellidos</label>
+              <input
+                type="text"
+                class="form-control"
+                id="apellidos"
+                [(ngModel)]="form.apellidos"
+                name="apellidos"
+                required
+                placeholder="Apellidos"
+                [class.is-invalid]="submitted && !form.apellidos"
+              />
+              <div class="invalid-feedback">Los apellidos son obligatorios</div>
+            </div>
+
+            <div class="col-md-4">
+              <label for="dni" class="form-label">DNI</label>
+              <input
+                type="text"
+                class="form-control"
+                id="dni"
+                [(ngModel)]="form.dni"
+                name="dni"
+                placeholder="12345678A"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Contacto -->
+        <div class="form-section mb-4">
+          <h6 class="form-section-title">✉️ Información de contacto</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="email" class="form-label required">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                [(ngModel)]="form.email"
+                name="email"
+                required
+                placeholder="correo@ejemplo.com"
+                [class.is-invalid]="submitted && !form.email"
+              />
+              <div class="invalid-feedback">El email es obligatorio y debe ser válido</div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="telefono1" class="form-label">Teléfono</label>
+              <input
+                type="tel"
+                class="form-control"
+                id="telefono1"
+                [(ngModel)]="form.telefono1"
+                name="telefono1"
+                placeholder="666 123 456"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos académicos (solo alumnos) -->
+        <div *ngIf="tipoUsuario === 'alumno'" class="form-section mb-4">
+          <h6 class="form-section-title">🎓 Datos académicos</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="ciclo_id" class="form-label required">Ciclo</label>
+              <select
+                id="ciclo_id"
+                class="form-select"
+                [(ngModel)]="form.ciclo_id"
+                name="ciclo_id"
+                required
+                [class.is-invalid]="submitted && !form.ciclo_id"
+              >
+                <option [ngValue]="null">Selecciona un ciclo</option>
+                <option *ngFor="let ciclo of ciclos" [ngValue]="ciclo.id">
+                  {{ ciclo.nombre }}
+                </option>
+              </select>
+              <div class="invalid-feedback">El ciclo es obligatorio</div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="curso" class="form-label required">Curso</label>
+              <select
+                id="curso"
+                class="form-select"
+                [(ngModel)]="form.curso"
+                name="curso"
+                required
+                [class.is-invalid]="submitted && !form. curso"
+              >
+                <option [ngValue]="null">Selecciona un curso</option>
+                <option [ngValue]="1">1º</option>
+                <option [ngValue]="2">2º</option>
+              </select>
+              <div class="invalid-feedback">El curso es obligatorio</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div *ngIf="formError" class="alert alert-danger d-flex align-items-center" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <div>{{ formError }}</div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-outline-secondary px-4" (click)="cancelar()">
+            <i class="bi bi-x-circle"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-success px-4">
+            <i class="bi bi-{{ editando ? 'check-circle' : 'plus-circle' }}"></i>
+            {{ editando ? 'Guardar Cambios' : 'Crear Usuario' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tabla usuarios -->
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Usuario</th>
+              <th>Nombre Completo</th>
+              <th>Tipo</th>
+              <th>Ciclo/Curso</th>
+              <th>Email</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let usuario of usuariosFiltrados">
+              <td><strong>{{ usuario.username }}</strong></td>
+              <td>{{ usuario.nombre }} {{ usuario.apellidos }}</td>
+              <td>
+                <span class="badge" [class.bg-success]="usuario.tipo_id === 3" [class.bg-primary]="usuario.tipo_id === 4">
+                  {{ usuario.tipo_id === 3 ? 'Profesor' : 'Alumno' }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="usuario.tipo_id === 4 && usuario.ciclo_id">
+                  {{ getNombreCiclo(usuario. ciclo_id) }} - {{ usuario.curso }}º
+                </span>
+                <span *ngIf="usuario.tipo_id === 3">-</span>
+              </td>
+              <td>{{ usuario. email }}</td>
+              <td class="text-end">
+                <button 
+                  class="btn btn-sm btn-outline-secondary me-1" 
+                  (click)="editarUsuario(usuario)"
+                  title="Editar"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button 
+                  class="btn btn-sm btn-outline-danger" 
+                  (click)="borrarUsuario(usuario)"
+                  title="Eliminar"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="usuariosFiltrados.length === 0">
+              <td colspan="6" class="text-center text-muted py-4">
+                No se encontraron usuarios con los filtros aplicados
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-    <div class="mt-3 d-flex gap-2">
-      <button class="btn btn-success btn-sm" (click)="guardar()">Guardar</button>
-      <button class="btn btn-secondary btn-sm" (click)="cancelar()">Cancelar</button>
+  </div>
+
+  <!-- Toast de confirmación -->
+  <div 
+    *ngIf="showToast" 
+    class="toast-container position-fixed top-0 end-0 p-3"
+    style="z-index: 9999"
+  >
+    <div 
+      class="toast show" 
+      [class.bg-success]="toastType === 'success'"
+      [class.bg-danger]="toastType === 'error'"
+      role="alert"
+    >
+      <div class="toast-header text-white" 
+           [class.bg-success]="toastType === 'success'"
+           [class.bg-danger]="toastType === 'error'">
+        <strong class="me-auto">
+          <i class="bi bi-{{ toastType === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill' }}"></i>
+          {{ toastType === 'success' ? 'Éxito' : 'Error' }}
+        </strong>
+        <button type="button" class="btn-close btn-close-white" (click)="cerrarToast()"></button>
+      </div>
+      <div class="toast-body text-white">
+        {{ toastMessage }}
+      </div>
     </div>
   </div>
 </div>

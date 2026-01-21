@@ -8,6 +8,7 @@ export const roleGuard: CanActivateFn = (route) => {
 
   // Debe estar autenticado primero
   if (!auth.isAuthenticated()) {
+    console.warn('⛔ roleGuard - Usuario no autenticado');
     router.navigate(['/login']);
     return false;
   }
@@ -15,21 +16,57 @@ export const roleGuard: CanActivateFn = (route) => {
   // Roles permitidos declarados en la ruta
   const allowed = (route.data?.['roles'] as string[] | undefined) ?? [];
 
-  // Rol del usuario actual, con fallback por tipo_id
-  const userRol = String(
-    auth.getRol?.() ??
-    (auth.user?.rol ?? (auth.user?.tipo_id === 1 ? 'god' :
-                        auth.user?.tipo_id === 2 ? 'admin' :
-                        auth.user?.tipo_id === 3 ? 'profesor' :
-                        auth.user?.tipo_id === 4 ? 'alumno' : ''))
-  ).toLowerCase();
+  // ⭐ OBTENER ROL DEL USUARIO (con fallback robusto)
+  let userRol = '';
 
-  if (allowed.length === 0) return true;
-
-  const ok = allowed.map(r => r.toLowerCase()).includes(userRol);
-  if (!ok) {
-    // Redirige a home si tiene sesión pero no permiso; si no, al login
-    router.navigate(['/home']);
+  // 1️⃣ Intentar obtener de auth.getRol()
+  if (auth.getRol && typeof auth.getRol === 'function') {
+    userRol = auth.getRol();
   }
+
+  // 2️⃣ Si no existe, intentar auth.user.rol
+  if (! userRol && auth.user?. rol) {
+    userRol = auth.user.rol;
+  }
+
+  // 3️⃣ Si no existe, mapear tipo_id a rol
+  if (!userRol && auth. user?.tipo_id) {
+    const tipoMap:  Record<number, string> = {
+      1: 'god',
+      2: 'admin',
+      3: 'profesor',
+      4: 'alumno'
+    };
+    userRol = tipoMap[auth.user.tipo_id] || '';
+  }
+
+  // Normalizar a minúsculas
+  userRol = String(userRol).toLowerCase().trim();
+
+  // ⭐ DEBUG TEMPORAL
+  console.log('🔍 roleGuard - Ruta:', route.url);
+  console.log('🔍 roleGuard - Roles permitidos:', allowed);
+  console.log('🔍 roleGuard - Usuario (auth.user):', auth.user);
+  console.log('🔍 roleGuard - Rol calculado:', userRol);
+
+  // Si no hay restricción de roles, permitir
+  if (allowed.length === 0) {
+    console.log('✅ roleGuard - Sin restricciones de rol');
+    return true;
+  }
+
+  // Comprobar si el rol del usuario está en los permitidos
+  const allowedLower = allowed.map(r => r.toLowerCase().trim());
+  const ok = allowedLower.includes(userRol);
+
+  if (!ok) {
+    console.warn('⛔ roleGuard - Acceso denegado');
+    console.warn('⛔ roleGuard - Rol requerido:', allowedLower);
+    console.warn('⛔ roleGuard - Rol del usuario:', userRol);
+    router.navigate(['/home']);
+  } else {
+    console.log('✅ roleGuard - Acceso permitido');
+  }
+
   return ok;
 };

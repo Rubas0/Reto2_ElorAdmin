@@ -22,6 +22,11 @@ export class God implements OnInit {
   formError = '';
   adminEditId: number | null = null;
 
+ // Toast
+  showToast = false;
+  toastMessage = '';
+  toastType:  'success' | 'error' = 'success';
+
   constructor(private usuarioService: Usuario) {}
 
   ngOnInit() {
@@ -68,11 +73,19 @@ export class God implements OnInit {
 
   borrarAdmin(admin: any) {
     if (admin.username === 'goduser') {
-      this.formError = 'No se puede borrar al usuario god.';
+      this.mostrarToast('No se puede borrar al usuario god', 'error');
       return;
     }
     if (confirm('¿Seguro que quieres borrar este administrador?')) {
-      this.usuarioService.deleteUsuario(admin.id).subscribe(() => this.cargarAdmins());
+      this.usuarioService.deleteUsuario(admin.id).subscribe({
+        next: () => {
+          this.cargarAdmins();
+          this.mostrarToast('Administrador eliminado correctamente', 'success');
+        },
+        error: () => {
+          this.mostrarToast('Error al eliminar administrador', 'error');
+        }
+      });
     }
   }
 
@@ -80,7 +93,7 @@ export class God implements OnInit {
     this.submitted = true;
     this.formError = '';
     if (!this.form.username || !this.form.nombre || !this.form.apellidos || !this.form.email || (!this.editando && !this.form.password)) {
-      this.formError = 'Rellena todos los campos obligatorios';
+      this.mostrarToast('Rellena todos los campos obligatorios', 'error');
       return;
     }
 
@@ -100,14 +113,27 @@ export class God implements OnInit {
       // Si no cambiamos password, evitar enviarla vacía
       const data = { ...this.form, id: this.adminEditId, rol: 'admin' };
       if (!data.password) delete data.password;
-      this.usuarioService.updateUsuario(this.adminEditId, data).subscribe(() => {
-        this.cargarAdmins();
-        this.cancelar();
+
+        this.usuarioService.updateUsuario(this.adminEditId, data).subscribe({
+        next: () => {
+          this.cargarAdmins();
+          this.cancelar();
+          this.mostrarToast('Administrador actualizado correctamente', 'success');
+        },
+        error: () => {
+          this.mostrarToast('Error al actualizar administrador', 'error');
+        }
       });
     } else {
-      this.usuarioService.addUsuario({ ...this.form, rol: 'admin' }).subscribe(() => {
-        this.cargarAdmins();
-        this.cancelar();
+      this.usuarioService.addUsuario({ ...this.form, rol: 'admin' }).subscribe({
+        next: () => {
+          this.cargarAdmins();
+          this.cancelar();
+          this.mostrarToast('Administrador creado correctamente', 'success');
+        },
+        error: () => {
+          this.mostrarToast('Error al crear administrador', 'error');
+        }
       });
     }
   }
@@ -120,4 +146,21 @@ export class God implements OnInit {
     this.form = { username: '', nombre: '', apellidos: '', email: '', password: '' };
     this.adminEditId = null;
   }
+  
+  // Método para mostrar toast
+  mostrarToast(mensaje: string, tipo: 'success' | 'error') {
+    this.toastMessage = mensaje;
+    this.toastType = tipo;
+    this.showToast = true;
+
+    // Ocultar automáticamente después de 3 segundos
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
+  }
+
+  cerrarToast() {
+    this.showToast = false;
+  }
+  
 }

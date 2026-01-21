@@ -71,7 +71,9 @@ export class LoginComponent {
           } else if (rol === 'admin' || rol === 'administrador' || rol === 'administradores' || rol === 'secretaria') {
             this.router.navigate(['/admins']);
           } else if (rol === 'profesor') {
-            this.router.navigate(['/home']);
+            this.router.navigate(['/profesores']);
+          } else if (rol === 'alumno') {
+            this.router.navigate(['/alumnos']);
           } else {
             this.router.navigate(['/home']);
           }

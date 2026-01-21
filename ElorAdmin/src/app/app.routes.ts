@@ -5,13 +5,16 @@ import { God } from './componentes/god/god';
 import { Admins } from './componentes/admins/admins';
 import { roleGuard } from './guards/role.guard';
 import { authGuard } from './guards/auth.guard';
+import { Alumnos } from './componentes/alumnos/alumnos';
+import { Profesores } from './componentes/profesores/profesores';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'home', component: Home, canActivate: [authGuard] },
   { path: 'god', component: God, canActivate: [authGuard, roleGuard], data: { roles: ['god'] } },
-  { path: 'admins', component: Admins, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'god'] } },
-  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  { path: 'admins', component: Admins, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'administrador', 'god'] } },
+  { path: 'alumnos', component: Alumnos, canActivate: [authGuard, roleGuard], data: { roles: ['alumno'] } },
+  { path: 'profesores', component: Profesores, canActivate: [authGuard, roleGuard], data: { roles: ['profesor'] } },
   { path: '**', redirectTo: 'login' } // cualquier otra ruta redirige a login
 ];
 

@@ -27,28 +27,36 @@ export class AuthService {
   }
 
   // Marca sesión y guarda usuario
-  setLoggedIn(user: any): void {
-    this._user = user;
-    this._isLoggedIn = true;
-    try {
-      localStorage.setItem('user', JSON.stringify(user));
-    } catch {
-      // si el almacenamiento falla, seguimos con sesión en memoria
+  // Guardar usuario logueado
+  setLoggedIn(usuario: any): void {
+    // ⭐ Mapear tipo_id a rol si no existe
+    if (! usuario.rol && usuario.tipo_id) {
+      const tipoMap: Record<number, string> = {
+        1: 'god',
+        2: 'admin',
+        3: 'profesor',
+        4: 'alumno'
+      };
+      usuario.rol = tipoMap[usuario.tipo_id] || '';
     }
+
+    // ⭐ Normalizar rol
+    if (usuario.rol) {
+      usuario.rol = usuario.rol.toLowerCase().trim();
+    }
+
+    // Guardar en memoria y localStorage
+    this._user = usuario;
+    this._isLoggedIn = true;
+    localStorage.setItem('user', JSON.stringify(usuario));
+
+    console.log('✅ Usuario logueado:', usuario);
   }
 
-  // Cierra sesión
-  logout(): void {
-    this._isLoggedIn = false;
-    this._user = null;
-    localStorage.removeItem('user');
+  // Obtener usuario logueado
+  getLoggedUser(): any {
+    return this.user;
   }
-
-  // Estado de autenticación
-  isAuthenticated(): boolean {
-    return this._isLoggedIn;
-  }
-
   // Getter del usuario actual (intenta recuperar de localStorage si no está en memoria)
   get user(): any {
     if (this._user) return this._user;
@@ -67,6 +75,24 @@ export class AuthService {
   // Rol en minúsculas del usuario actual
   getRol(): string {
     const u = this.user;
+    // pruebas de depuración
+  console.log('🔍 authService.getRol() - Usuario:', u);
+  console.log('🔍 authService. getRol() - Rol:', u?.rol);
+  console.log('🔍 authService.getRol() - tipo_id:', u?.tipo_id);
+
     return String(u?.rol || '').toLowerCase();
+  
   }
+  // Verificar si está autenticado
+  isAuthenticated(): boolean {
+    return !!this.user;
+  }
+
+  // Logout
+  logout(): void {
+    this._user = null;
+    this._isLoggedIn = false;
+    localStorage.removeItem('user');
+  }
+
 }

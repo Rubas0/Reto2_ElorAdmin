@@ -44,6 +44,10 @@ export class Usuario {
     return this.http.get<UsuarioDTO[]>(`${this.apiUrl}/usuarios`, { headers: this.headers(), params });
   }
 
+  getCiclos(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/ciclos`);
+  }
+
   // --- CRUD administra: Alta ---
   addUsuario(body: { username: string; nombre: string; apellidos: string; email: string; rol: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/usuarios`, body, { headers: this.headers() });
@@ -63,5 +67,34 @@ export class Usuario {
   // --- CRUD administra: Baja ---
   deleteUsuario(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/usuarios/${id}`, { headers: this.headers() });
+  }
+
+ 
+  // Obtener usuario por ID
+  getById(id: number): Observable<UsuarioDTO> {
+    return this.http.get<UsuarioDTO>(`${this.apiUrl}/users/${id}`);
+  }
+
+  // Obtener horario de un alumno
+  getHorarioAlumno(alumnoId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/horarios/alumno/${alumnoId}`);
+  }
+
+  // Obtener reuniones de un alumno
+  getReunionesAlumno(alumnoId:  number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/reuniones/alumno/${alumnoId}`);
+  }
+
+  // Obtener horario de un profesor
+  getHorarioProfesor(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/horarios/profesor/${id}`);
+  }
+// Obtener reuniones de un profesor
+   getReunionesProfesor(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/reuniones/profesor/${id}`);
+  }
+// Obtener alumnos asignados a un profesor
+  getAlumnosProfesor(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/profesores/${id}/alumnos`);
   }
 }

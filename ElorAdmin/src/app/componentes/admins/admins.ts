@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Usuario, UsuarioDTO } from '../../servicios/usuario';
 import { AuthService } from '../../servicios/auth';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-admins',
@@ -30,6 +31,11 @@ export class Admins implements OnInit {
   // Formulario
   editMode = false;
   form: any = { id: null, username: '', nombre: '', apellidos: '', email: '', rol: 'profesor', password: '' };
+
+    // Toast
+  showToast = false;
+  toastMessage = '';
+  toastType:  'success' | 'error' = 'success';
 
   constructor(private svc: Usuario, private auth: AuthService) {}
 
