@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { JSEncrypt } from 'jsencrypt';
-import { PUBLIC_KEY } from '../../public.key';
+import { PUBLIC_KEY } from '../../public.key'
 
 
 @Component({

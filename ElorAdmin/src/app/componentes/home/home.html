@@ -1,5 +1,94 @@
-<div class="home-container">
-  <h2>Bienvenido/a a ElorAdmin</h2>
-  <p>Login correcto. Ahora puedes acceder a las opciones de administración o consultar tus datos.</p>
-  <!-- Añade enlaces/menu según rol aquí -->
+<div class="container mt-4">
+  <h2>Bienvenido, {{ usuario?.nombre }} {{ usuario?.apellidos }}</h2>
+  <p class="text-muted">Rol: {{ usuario?.rol }}</p>
+
+  <hr />
+
+  <!-- Botones para cambiar entre Profesores y Alumnos -->
+  <div class="btn-group mb-3" role="group">
+    <button
+      type="button"
+      class="btn"
+      [class.btn-primary]="mostrarProfesores"
+      [class.btn-outline-primary]="!mostrarProfesores"
+      (click)="cambiarVista('profesor')"
+    >
+      Profesores
+    </button>
+    <button
+      type="button"
+      class="btn"
+      [class.btn-primary]="!mostrarProfesores"
+      [class.btn-outline-primary]="mostrarProfesores"
+      (click)="cambiarVista('alumno')"
+    >
+      Alumnos
+    </button>
+  </div>
+
+  <!-- Buscador -->
+  <div class="input-group mb-3">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Buscar por nombre o apellidos..."
+      [(ngModel)]="busqueda"
+      (keyup.enter)="buscar()"
+    />
+    <button class="btn btn-outline-secondary" (click)="buscar()">
+      Buscar
+    </button>
+  </div>
+
+  <!-- Listado de Profesores -->
+  <div *ngIf="mostrarProfesores">
+    <h4>Profesores</h4>
+    <div *ngIf="profesores.length === 0" class="alert alert-info">
+      No se encontraron profesores.
+    </div>
+    <table class="table table-striped" *ngIf="profesores.length > 0">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Nombre</th>
+          <th>Apellidos</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of profesores">
+          <td>{{ p.username }}</td>
+          <td>{{ p.nombre }}</td>
+          <td>{{ p.apellidos }}</td>
+          <td>{{ p.email }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Listado de Alumnos -->
+  <div *ngIf="!mostrarProfesores">
+    <h4>Alumnos</h4>
+    <div *ngIf="alumnos.length === 0" class="alert alert-info">
+      No se encontraron alumnos.
+    </div>
+    <table class="table table-striped" *ngIf="alumnos.length > 0">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Nombre</th>
+          <th>Apellidos</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of alumnos">
+          <td>{{ a.username }}</td>
+          <td>{{ a.nombre }}</td>
+          <td>{{ a.apellidos }}</td>
+          <td>{{ a.email }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

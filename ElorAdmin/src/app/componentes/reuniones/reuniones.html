@@ -1,1 +1,140 @@
-<p>reuniones works!</p>
+<div class="container-fluid mt-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="text-primary">
+          <i class="bi bi-calendar-check"></i> Gestión de Reuniones
+        </h2>
+        <button class="btn btn-success" routerLink="/nueva-reunion">
+          <i class="bi bi-plus-circle"></i> Nueva Reunión
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros Encadenados -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros de Centros</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <!-- Filtro Tipo de Centro -->
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Tipo de Centro (DTITUC)</label>
+          <select 
+            class="form-select" 
+            [(ngModel)]="tipoCentroSeleccionado"
+            (change)="onTipoCentroChange()">
+            <option value="">-- Todos --</option>
+            <option *ngFor="let tipo of tiposCentro" [value]="tipo">
+              {{ tipo }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Filtro Territorio -->
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Territorio (DTERRE)</label>
+          <select 
+            class="form-select" 
+            [(ngModel)]="territorioSeleccionado"
+            (change)="onTerritorioChange()"
+            [disabled]="territorios.length === 0">
+            <option value="">-- Seleccione --</option>
+            <option *ngFor="let territorio of territorios" [value]="territorio">
+              {{ territorio }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Filtro Municipio -->
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Municipio (DMUNIC)</label>
+          <select 
+            class="form-select" 
+            [(ngModel)]="municipioSeleccionado"
+            (change)="onMunicipioChange()"
+            [disabled]="municipios.length === 0">
+            <option value="">-- Seleccione --</option>
+            <option *ngFor="let municipio of municipios" [value]="municipio">
+              {{ municipio }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <span class="badge bg-info fs-6">
+          <i class="bi bi-list-check"></i> 
+          Total reuniones filtradas: {{ contarReuniones() }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Reuniones Paginada -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">Listado de Reuniones</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-striped mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>Título</th>
+              <th>Fecha/Hora</th>
+              <th>Aula</th>
+              <th>Centro</th>
+              <th>Municipio</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let reunion of filteredReuniones | paginate: { itemsPerPage: itemsPerPage, currentPage: p }">
+              <td>
+                <strong>{{ reunion.titulo }}</strong>
+                <br>
+                <small class="text-muted">{{ reunion.tema }}</small>
+              </td>
+              <td>
+                <i class="bi bi-calendar3"></i> {{ reunion.fecha }}
+                <br>
+                <i class="bi bi-clock"></i> {{ reunion.hora }}
+              </td>
+              <td>{{ reunion.aula }}</td>
+              <td>
+                <small>{{ reunion.centro?.nombre || 'N/A' }}</small>
+                <br>
+                <span class="badge bg-secondary">{{ reunion.centro?.dtituc }}</span>
+              </td>
+              <td>{{ reunion.centro?.dmunic }} ({{ reunion.centro?.dterre }})</td>
+              <td>
+                <span [class]="getEstadoClass(reunion.estado)">
+                  {{ reunion.estado }}
+                </span>
+              </td>
+              <td>
+                <button 
+                  class="btn btn-sm btn-primary me-1"
+                  [routerLink]="['/reunion-detalle', reunion.id]"
+                  title="Ver detalles y mapa">
+                  <i class="bi bi-geo-alt"></i> Ver Mapa
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-footer">
+      <pagination-controls 
+        (pageChange)="p = $event"
+        previousLabel="Anterior"
+        nextLabel="Siguiente">
+      </pagination-controls>
+    </div>
+  </div>
+</div>

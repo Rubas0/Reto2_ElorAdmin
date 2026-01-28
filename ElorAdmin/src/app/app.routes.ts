@@ -7,6 +7,9 @@ import { roleGuard } from './guards/role.guard';
 import { authGuard } from './guards/auth.guard';
 import { Alumnos } from './componentes/alumnos/alumnos';
 import { Profesores } from './componentes/profesores/profesores';
+import { Reuniones } from './componentes/reuniones/reuniones';
+import { ReunionDetalle } from './componentes/reunion-detalle/reunion-detalle';
+
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -15,6 +18,8 @@ export const routes: Routes = [
   { path: 'admins', component: Admins, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'administrador', 'god'] } },
   { path: 'alumnos', component: Alumnos, canActivate: [authGuard, roleGuard], data: { roles: ['alumno'] } },
   { path: 'profesores', component: Profesores, canActivate: [authGuard, roleGuard], data: { roles: ['profesor'] } },
+  { path: 'reuniones', component: Reuniones },
+  { path: 'reunion-detalle/:id', component: ReunionDetalle },
   { path: '**', redirectTo: 'login' } // cualquier otra ruta redirige a login
 ];
 

@@ -37,12 +37,13 @@ export class Usuario {
   }
 
   // --- Listado general de usuarios (parámetros opcionales: rol, filtro, etc) ---
-  getUsuarios(rol?: string, q?: string): Observable<UsuarioDTO[]> {
-    let params = new HttpParams();
-    if (rol) params = params.set('rol', rol);
-    if (q) params = params.set('q', q);
-    return this.http.get<UsuarioDTO[]>(`${this.apiUrl}/usuarios`, { headers: this.headers(), params });
-  }
+getUsuarios(rol?: string, q?: string): Observable<any[]> {
+  let params: any = {};
+  if (rol) params.rol = rol;
+  if (q && q.trim()) params.q = q.trim();
+  
+  return this.http.get<any[]>(`${this.apiUrl}/usuarios`, { params });
+}
 
   getCiclos(): Observable<any[]> {
   return this.http.get<any[]>(`${this.apiUrl}/ciclos`);

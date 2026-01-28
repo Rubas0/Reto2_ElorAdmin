@@ -1,1 +1,108 @@
-<p>profesores works!</p>
+<div class="container">
+  <div class="header">
+    <h2>Bienvenido, {{ profesor?.nombre }} {{ profesor?.apellidos }}</h2>
+    <p class="text-muted">Rol: Profesor</p>
+  </div>
+
+  <hr />
+
+  <div class="alert alert-danger" [hidden]="!error">{{ error }}</div>
+
+  <div class="btn-group mb-3">
+    <button
+      type="button"
+      class="btn"
+      [class.btn-primary]="mostrarProfesores"
+      [class.btn-outline-primary]="!mostrarProfesores"
+      (click)="cambiarVista('profesor')"
+      [disabled]="loading"
+    >
+      Profesores
+    </button>
+    <button
+      type="button"
+      class="btn"
+      [class.btn-primary]="!mostrarProfesores"
+      [class.btn-outline-primary]="mostrarProfesores"
+      (click)="cambiarVista('alumno')"
+      [disabled]="loading"
+    >
+      Alumnos
+    </button>
+  </div>
+
+  <div class="input-group mb-3">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Buscar por nombre o apellidos..."
+      [(ngModel)]="busqueda"
+      (keyup.enter)="buscar()"
+      [disabled]="loading"
+    />
+    <button class="btn btn-outline-secondary" (click)="buscar()" [disabled]="loading">
+      {{ loading ? 'Buscando...' : 'Buscar' }}
+    </button>
+    <button class="btn btn-outline-danger" (click)="limpiarBusqueda()" [disabled]="loading || !busqueda">
+      Limpiar
+    </button>
+  </div>
+
+  <!-- Spinner -->
+  <div class="text-center my-4" [hidden]="!loading">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Profesores -->
+  <div [hidden]="loading || !mostrarProfesores">
+    <h4>Profesores ({{ profesores?.length || 0 }})</h4>
+    <div class="alert alert-info" [hidden]="profesores.length > 0">
+      No se encontraron profesores.
+    </div>
+    <table class="table table-striped" [hidden]="profesores.length === 0">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Nombre</th>
+          <th>Apellidos</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of profesores">
+          <td>{{ p.username }}</td>
+          <td>{{ p.nombre }}</td>
+          <td>{{ p.apellidos }}</td>
+          <td>{{ p.email }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Alumnos -->
+  <div [hidden]="loading || mostrarProfesores">
+    <h4>Alumnos ({{ alumnos?.length || 0 }})</h4>
+    <div class="alert alert-info" [hidden]="alumnos.length > 0">
+      No se encontraron alumnos.
+    </div>
+    <table class="table table-striped" [hidden]="alumnos.length === 0">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Nombre</th>
+          <th>Apellidos</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of alumnos">
+          <td>{{ a.username }}</td>
+          <td>{{ a.nombre }}</td>
+          <td>{{ a.apellidos }}</td>
+          <td>{{ a.email }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
