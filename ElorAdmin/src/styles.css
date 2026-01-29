@@ -2,3 +2,89 @@
 header img { display: block; }
 .logo-wrap { display: flex; justify-content: center; margin-bottom: 1rem; }
 .logo { height: 64px; }
+
+/* Estilos globales */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #0066cc;
+}
+
+.text-primary {
+  color: #0066cc !important;
+}
+
+.bg-primary {
+  background-color: #0066cc !important;
+}
+
+.btn-primary {
+  background-color: #0066cc;
+  border-color: #0055aa;
+}
+
+.btn-primary:hover {
+  background-color: #0055aa;
+  border-color: #004488;
+}
+
+/* Estilos para paginación */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.pagination-controls ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  gap: 5px;
+}
+
+.pagination-controls li {
+  display: inline-block;
+}
+
+.pagination-controls a {
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #0066cc;
+  cursor: pointer;
+}
+
+.pagination-controls a:hover {
+  background-color: #e9ecef;
+}
+
+.pagination-controls .current {
+  background-color: #0066cc;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+/* Estilos para mapas */
+.mapboxgl-canvas {
+  border-radius: 8px;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 10px;
+  }
+  
+  .table {
+    font-size: 0.9rem;
+  }
+}

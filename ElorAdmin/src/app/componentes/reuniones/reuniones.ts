@@ -60,6 +60,30 @@ export class Reuniones implements OnInit {
   territorioSeleccionado: string = '';
   municipioSeleccionado: string = '';
 
+  // Nuevas propiedades para el formulario de creación de reunión
+  mostrarFormulario: boolean = false;
+  nuevaReunion = {
+    titulo: '',
+    tema: '',
+    fecha: '',
+    hora: '',
+    aula: '',
+    estado: 'Pendiente' as 'Pendiente' | 'Aceptada' | 'Cancelada' | 'Conflicto',
+    centroId: 1,
+    profesorId: 0,
+    alumnoId: 0
+  };
+
+  profesores: any[] = [];
+  alumnos: any[] = [];
+  esProfesor: boolean = false;
+
+  // Fechas mínimas/máximas
+  fechaMinima = '';
+  fechaMaxima = '';
+
+
+
   // Mapeo normalizado de territorios
   readonly MAPA_TERRITORIOS: { [key: string]: string } = {
     'bizkaia': 'Bizkaia',
@@ -72,10 +96,113 @@ export class Reuniones implements OnInit {
     'alava': 'Araba'
   };
 
-  constructor(private reunionesService: reuniones) {}
+  constructor(private reunionesService: reuniones) {
+    this.configurarFechas();
+    this.verificarPermisos();
+  }
 
-  ngOnInit(): void {
-    this.cargarDatos();
+  async ngOnInit() {
+    await this.cargarDatos();
+    await this.cargarUsuarios();
+  }
+
+  verificarPermisos() {
+    // Aquí deberíamos verificar si el usuario es profesor 
+    // Por ahora lo dejamos en true para pruebas
+    this.esProfesor = true; //TODO: Implementar verificación solo si es profesor
+  }
+
+  configurarFechas() {
+    const hoy = new Date();
+    this.fechaMinima = hoy.toISOString().split('T')[0];
+    
+    const finCurso = new Date('2025-05-31');
+    this.fechaMaxima = finCurso.toISOString().split('T')[0];
+  }
+
+  async cargarUsuarios() {
+    try {
+      this.profesores = await this.reunionesService.getProfesores();
+      this.alumnos = await this.reunionesService.getAlumnos();
+    } catch (error) {
+      console.error('Error cargando usuarios:', error);
+    }
+  }
+
+  // Abrir formulario
+  abrirFormulario() {
+    if (!this.esProfesor) {
+      alert('Solo los profesores pueden crear reuniones');
+      return;
+    }
+    this.mostrarFormulario = true;
+    this.resetFormulario();
+  }
+
+  // Cerrar formulario
+  cerrarFormulario() {
+    this.mostrarFormulario = false;
+    this.resetFormulario();
+  }
+
+  // Reset formulario
+  resetFormulario() {
+    this.nuevaReunion = {
+      titulo: '',
+      tema: '',
+      fecha: '',
+      hora: '',
+      aula: '',
+      estado: 'Pendiente',
+      centroId: 1,
+      profesorId: 0,
+      alumnoId: 0
+    };
+  }
+
+  // Guardar reunión
+  async guardarReunion() {
+    if (!this.validarFormulario()) {
+      return;
+    }
+
+    try {
+      await this.reunionesService.createReunion(this.nuevaReunion);
+      alert('✅ Reunión creada correctamente');
+      this.cerrarFormulario();
+      await this.cargarDatos(); // Recargar lista
+    } catch (error) {
+      console.error('Error creando reunión:', error);
+      alert('❌ Error al crear la reunión');
+    }
+  }
+
+  validarFormulario(): boolean {
+    if (!this.nuevaReunion.titulo.trim()) {
+      alert('El título es obligatorio');
+      return false;
+    }
+    if (!this.nuevaReunion.tema.trim()) {
+      alert('El tema es obligatorio');
+      return false;
+    }
+    if (!this.nuevaReunion.fecha) {
+      alert('La fecha es obligatoria');
+      return false;
+    }
+    if (!this.nuevaReunion.hora) {
+      alert('La hora es obligatoria');
+      return false;
+    }
+    if (!this.nuevaReunion.aula.trim()) {
+      alert('El aula es obligatoria');
+      return false;
+    }
+    if (!this.nuevaReunion.alumnoId || this.nuevaReunion.alumnoId === 0) {
+      alert('Debes seleccionar un alumno');
+      return false;
+    }
+    return true;
   }
 
   async cargarDatos() {
@@ -217,4 +344,6 @@ export class Reuniones implements OnInit {
     };
     return clases[estado] || 'badge bg-info';
   }
+
+
 }

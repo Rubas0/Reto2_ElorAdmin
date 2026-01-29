@@ -4,6 +4,30 @@ import { CommonModule } from '@angular/common';
 import { reuniones } from '../../servicios/reuniones';
 import mapboxgl from 'mapbox-gl';
 
+interface Centro {
+  codigo: string;
+  nombre: string;
+  dtituc: string;
+  dterre: string;
+  dmunic: string;
+  lat: number;
+  lon: number;
+  direccion?: string;
+}
+
+interface Reunion {
+  id: number;
+  titulo: string;
+  tema: string;
+  fecha: string;
+  hora: string;
+  aula: string;
+  estado: 'Pendiente' | 'Aceptada' | 'Cancelada' | 'Conflicto';
+  centroId: number;
+  profesorId: number;
+  alumnoId: number;
+}
+
 @Component({
   selector: 'app-reunion-detalle',
   standalone: true,
@@ -12,46 +36,108 @@ import mapboxgl from 'mapbox-gl';
   styleUrls: ['./reunion-detalle.css']
 })
 export class ReunionDetalle implements OnInit, AfterViewInit {
-  reuniones = inject(reuniones);
+  reunionesService = inject(reuniones);
   route = inject(ActivatedRoute);
 
-  reunion: any = null;
-  centro: any = null;
+  reunion: Reunion | null = null;
+  centro: Centro | null = null;
   map!: mapboxgl.Map;
   mapLoaded = false;
+  loading = true;
+  error = '';
 
-  // Configurar el token ANTES del constructor para que mapbox lo use
+  // Token de Mapbox
   private readonly MAPBOX_TOKEN = 'pk.eyJ1IjoiaW92aWVkbyIsImEiOiJjbWo0ZDl5aGQwMDR2MmtzN3R4azRlZXRjIn0.4KYxMpPfQ7vZHh0Ix5eEaA';
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.cargarReunion(id);
+    if (id) {
+      this.cargarReunion(id);
+    } else {
+      this.error = 'ID de reunión no válido';
+      this.loading = false;
+    }
   }
 
   ngAfterViewInit() {
-    // Asegurar que el mapa se inicializa después de la vista
-    if (this.mapLoaded && this.centro) {
-      this.inicializarMapa();
-    }
+    // El mapa se inicializará después de cargar los datos
   }
 
   async cargarReunion(id: number) {
     try {
-      this.reunion = await this.reuniones.getReunionById(id);
-      // this.centro = await this.reuniones.getCentroById(this.reunion.centroId);
+      this.loading = true;
       
+      // Cargar reunión desde json-server
+      this.reunion = await this.reunionesService.getReunionById(id);
+      
+      if (!this.reunion) {
+        this.error = 'Reunión no encontrada';
+        this.loading = false;
+        return;
+      }
+
+      // Cargar centro desde EuskadiLatLon.json
+      await this.cargarCentro(this.reunion.centroId);
+      
+      this.loading = false;
       this.mapLoaded = true;
       
       // Esperar un tick para asegurar que el DOM está listo
       setTimeout(() => this.inicializarMapa(), 100);
+      
     } catch (error) {
       console.error('Error cargando reunión:', error);
+      this.error = 'Error al cargar la información de la reunión';
+      this.loading = false;
+    }
+  }
+
+  async cargarCentro(centroId: number) {
+    try {
+      // Cargar centros desde EuskadiLatLon.json
+      const response = await fetch('assets/data/EuskadiLatLon.json');
+      const centros: Centro[] = await response.json();
+      
+      // Buscar el centro por código
+      // Nota: Asumimos que centroId es el índice o usamos un centro por defecto
+      this.centro = centros[0] || {
+        codigo: '15112',
+        nombre: 'CIFP Elorrieta-Errekamari LHII',
+        dtituc: 'Departamento de Educación',
+        dterre: 'Bizkaia',
+        dmunic: 'Bilbao',
+        lat: 43.2627,
+        lon: -2.9253,
+        direccion: 'San Adrián, 3'
+      };
+      
+      console.log('✅ Centro cargado:', this.centro.nombre);
+      
+    } catch (error) {
+      console.error('Error cargando centro:', error);
+      // Centro por defecto: Elorrieta
+      this.centro = {
+        codigo: '15112',
+        nombre: 'CIFP Elorrieta-Errekamari LHII',
+        dtituc: 'Departamento de Educación',
+        dterre: 'Bizkaia',
+        dmunic: 'Bilbao',
+        lat: 43.2627,
+        lon: -2.9253,
+        direccion: 'San Adrián, 3'
+      };
     }
   }
 
   inicializarMapa() {
-    if (!this.centro || !document.getElementById('mapa')) {
-      console.error('No se puede inicializar el mapa: falta el centro o el contenedor');
+    if (!this.centro) {
+      console.error('No se puede inicializar el mapa: falta el centro');
+      return;
+    }
+
+    const contenedor = document.getElementById('mapa-reunion');
+    if (!contenedor) {
+      console.error('No se puede inicializar el mapa: falta el contenedor');
       return;
     }
 
@@ -62,45 +148,63 @@ export class ReunionDetalle implements OnInit, AfterViewInit {
         writable: false
       });
 
+      console.log('🗺️ Inicializando mapa en:', this.centro.nombre);
+
       this.map = new mapboxgl.Map({
-        container: 'mapa',
+        container: 'mapa-reunion',
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [this.centro.longitud, this.centro.latitud],
+        center: [this.centro.lon, this.centro.lat],
         zoom: 15
       });
 
       // Agregar controles de navegación
       this.map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-      // Crear el marcador
-      const marker = new mapboxgl.Marker({ 
-        color: '#0066cc',
-        scale: 1.2
-      })
-        .setLngLat([this.centro.longitud, this.centro.latitud])
-        .setPopup(
-          new mapboxgl.Popup({ offset: 25 }).setHTML(`
-            <div style="padding: 10px;">
-              <h6 style="margin: 0 0 8px 0; color: #0066cc;">
-                <i class="bi bi-building"></i> ${this.centro.nombre}
-              </h6>
-              <p style="margin: 0; font-size: 0.9rem;">
-                <i class="bi bi-geo-alt"></i> ${this.centro.direccion}
-              </p>
-              <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #666;">
-                ${this.centro.DMUNIC}, ${this.centro.DTERRE}
-              </p>
-            </div>
-          `)
-        )
-        .addTo(this.map);
-
-      // Abrir el popup automáticamente
-      marker.togglePopup();
+      // Evento cuando el mapa carga
+      this.map.on('load', () => {
+        console.log('✅ Mapa cargado correctamente');
+        this.agregarMarcador();
+      });
 
     } catch (error) {
-      console.error('Error inicializando el mapa:', error);
+      console.error('❌ Error inicializando el mapa:', error);
+      this.error = 'Error al cargar el mapa';
     }
+  }
+
+  agregarMarcador() {
+    if (!this.centro || !this.map) return;
+
+    // Crear el marcador con popup
+    const marker = new mapboxgl.Marker({ 
+      color: '#0066cc',
+      scale: 1.2
+    })
+      .setLngLat([this.centro.lon, this.centro.lat])
+      .setPopup(
+        new mapboxgl.Popup({ offset: 25 }).setHTML(`
+          <div style="padding: 12px; font-family: Arial, sans-serif;">
+            <h6 style="margin: 0 0 8px 0; color: #0066cc; font-size: 14px; font-weight: bold;">
+              🏫 ${this.centro.nombre}
+            </h6>
+            <p style="margin: 4px 0; font-size: 12px; color: #555;">
+              📍 ${this.centro.direccion || 'Sin dirección'}
+            </p>
+            <p style="margin: 4px 0; font-size: 12px; color: #555;">
+              🏙️ ${this.centro.dmunic}, ${this.centro.dterre}
+            </p>
+            <p style="margin: 4px 0 0 0; font-size: 11px; color: #999;">
+              📐 ${this.centro.lat.toFixed(4)}, ${this.centro.lon.toFixed(4)}
+            </p>
+          </div>
+        `)
+      )
+      .addTo(this.map);
+
+    // Abrir el popup automáticamente
+    marker.togglePopup();
+
+    console.log('✅ Marcador añadido correctamente');
   }
 
   getEstadoClass(estado: string): string {
@@ -117,6 +221,7 @@ export class ReunionDetalle implements OnInit, AfterViewInit {
     // Limpiar el mapa al destruir el componente
     if (this.map) {
       this.map.remove();
+      console.log('🗑️ Mapa eliminado');
     }
   }
 }

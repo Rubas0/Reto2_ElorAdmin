@@ -5,9 +5,9 @@
         <h2 class="text-primary">
           <i class="bi bi-calendar-check"></i> Gestión de Reuniones
         </h2>
-        <button class="btn btn-success" routerLink="/nueva-reunion">
+       <button class="btn btn-success" (click)="abrirFormulario()">
           <i class="bi bi-plus-circle"></i> Nueva Reunión
-        </button>
+       </button>
       </div>
     </div>
   </div>
@@ -137,4 +137,102 @@
       </pagination-controls>
     </div>
   </div>
+
+  <!-- Modal de Crear Reunión -->
+<div class="modal-overlay" *ngIf="mostrarFormulario" (click)="cerrarFormulario()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h4><i class="bi bi-calendar-plus"></i> Nueva Reunión</h4>
+      <button class="btn-close" (click)="cerrarFormulario()"></button>
+    </div>
+    
+    <div class="modal-body">
+      <form>
+        <!-- Título -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Título *</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            [(ngModel)]="nuevaReunion.titulo"
+            name="titulo"
+            placeholder="Ej: Revisión del Reto 2"
+            maxlength="100">
+        </div>
+
+        <!-- Tema -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Tema *</label>
+          <textarea 
+            class="form-control" 
+            [(ngModel)]="nuevaReunion.tema"
+            name="tema"
+            rows="3"
+            placeholder="Descripción breve..."
+            maxlength="500"></textarea>
+        </div>
+
+        <div class="row">
+          <!-- Fecha -->
+          <div class="col-md-4 mb-3">
+            <label class="form-label fw-bold">Fecha *</label>
+            <input 
+              type="date" 
+              class="form-control" 
+              [(ngModel)]="nuevaReunion.fecha"
+              name="fecha"
+              [min]="fechaMinima"
+              [max]="fechaMaxima">
+          </div>
+
+          <!-- Hora -->
+          <div class="col-md-4 mb-3">
+            <label class="form-label fw-bold">Hora *</label>
+            <select class="form-select" [(ngModel)]="nuevaReunion.hora" name="hora">
+              <option value="">-- Selecciona --</option>
+              <option value="08:00">08:00 - Hora 1</option>
+              <option value="09:00">09:00 - Hora 2</option>
+              <option value="10:00">10:00 - Hora 3</option>
+              <option value="11:30">11:30 - Hora 4</option>
+              <option value="12:30">12:30 - Hora 5</option>
+              <option value="13:30">13:30 - Hora 6</option>
+            </select>
+          </div>
+
+          <!-- Aula -->
+          <div class="col-md-4 mb-3">
+            <label class="form-label fw-bold">Aula *</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [(ngModel)]="nuevaReunion.aula"
+              name="aula"
+              placeholder="Ej: 201">
+          </div>
+        </div>
+
+        <!-- Alumno -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Alumno *</label>
+          <select class="form-select" [(ngModel)]="nuevaReunion.alumnoId" name="alumnoId">
+            <option [value]="0">-- Selecciona un alumno --</option>
+            <option *ngFor="let alumno of alumnos" [value]="alumno.id">
+              {{ alumno.apellidos }}, {{ alumno.nombre }} - {{ alumno.ciclo }} {{ alumno.curso }}º
+            </option>
+          </select>
+        </div>
+
+        <!-- Botones -->
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-secondary" (click)="cerrarFormulario()">
+            <i class="bi bi-x-circle"></i> Cancelar
+          </button>
+          <button type="button" class="btn btn-success" (click)="guardarReunion()">
+            <i class="bi bi-save"></i> Crear Reunión
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 </div>

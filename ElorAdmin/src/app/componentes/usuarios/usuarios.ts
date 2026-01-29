@@ -6,8 +6,7 @@ import { AuthService } from '../../servicios/auth';
 import { Usuario as UsuarioService, UsuarioDTO } from '../../servicios/usuario';
 import { HttpParams } from '@angular/common/http';
 import {JSEncrypt } from 'jsencrypt';
-import { PUBLIC_KEY } from '../../public.key'; 
-
+import { PUBLIC_KEY } from '../../../public.key';
 @Component({
   selector: 'app-usuarios',
   standalone: true,

@@ -35,4 +35,14 @@ export class reuniones {
     return firstValueFrom(this.http.put(`${this.apiUrl}/reuniones/${id}`, reunion));
   }
 
+  // Métodos de profesores 
+  getProfesores() {
+    return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/profesores`));
+  }
+
+  // Métodos de alumnos 
+  getAlumnos() {
+    return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/alumnos`));
+  }
+
 }

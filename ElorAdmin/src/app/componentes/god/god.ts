@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Usuario } from '../../servicios/usuario';
 import { JSEncrypt } from 'jsencrypt';
-import { PUBLIC_KEY } from '../../public.key';
-
+import { PUBLIC_KEY } from '../../../public.key';
 @Component({
   selector: 'app-god',
   standalone: true,
