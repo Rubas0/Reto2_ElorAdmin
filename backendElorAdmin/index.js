@@ -39,7 +39,7 @@ app.use(express.json()); // parsea JSON en el body para que pueda enviar datos c
 const db = mysql.createConnection({
   host: 'localhost',    // cambiar si usas otra máquina
   user: 'root',
-  port: '3307',
+  port: '3308',
   password: '',
   database: 'reto2'
 });
@@ -173,6 +173,7 @@ app.get('/api/usuarios', (req, res) => {
   });
 });
 
+
 // Alta usuario (solo GOD puede crear admins/god). Descifra -> hashea antes de guardar
 app.post('/api/usuarios', (req, res) => {
   const rolSolicitante = requesterRole(req);
@@ -278,6 +279,203 @@ app.delete('/api/usuarios/:id', (req, res) => {
       if (err2) return res.status(500).json({ error: 'Error al borrar usuario' });
       res.json({ success: true });
     });
+  }); 
+});
+
+
+// ==================== REUNIONES ====================
+
+// Listar todas las reuniones
+app.get('/api/reuniones', (req, res) => {
+  console.log('GET /api/reuniones');
+  
+  const sql = `
+    SELECT 
+      r.id_reunion as id,
+      r.estado,
+      r.profesor_id as profesorId,
+      r.alumno_id as alumnoId,
+      r.id_centro as centroId,
+      r.titulo,
+      r.asunto as tema,
+      r.aula,
+      DATE_FORMAT(r.fecha, '%Y-%m-%d') as fecha,
+      DATE_FORMAT(r.fecha, '%H:%i') as hora,
+      r.created_at,
+      p.nombre as profesor_nombre, 
+      p.apellidos as profesor_apellidos,
+      a.nombre as alumno_nombre, 
+      a.apellidos as alumno_apellidos
+    FROM reuniones r
+    LEFT JOIN users p ON r.profesor_id = p.id
+    LEFT JOIN users a ON r.alumno_id = a.id
+    ORDER BY r.fecha DESC
+  `;
+  
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('❌ Error al listar reuniones:', err);
+      return res.status(500).json({ error: 'Error al listar reuniones', detalle: err.message });
+    }
+    
+    console.log('✅ Reuniones cargadas:', results.length);
+    res.json(results);
+  });
+});
+
+// GET /api/reuniones/:id - Obtener una reunión por ID
+app.get('/api/reuniones/:id', (req, res) => {
+  const { id } = req.params;
+  console.log('GET /api/reuniones/' + id);
+  
+  const sql = `
+    SELECT 
+      r.id_reunion as id,
+      r.estado,
+      r.profesor_id as profesorId,
+      r.alumno_id as alumnoId,
+      r.id_centro as centroId,
+      r.titulo,
+      r.asunto as tema,
+      r.aula,
+      DATE_FORMAT(r.fecha, '%Y-%m-%d') as fecha,
+      DATE_FORMAT(r.fecha, '%H:%i') as hora,
+      r.created_at,
+      p.nombre as profesor_nombre, 
+      p.apellidos as profesor_apellidos,
+      a.nombre as alumno_nombre, 
+      a.apellidos as alumno_apellidos
+    FROM reuniones r
+    LEFT JOIN users p ON r.profesor_id = p.id
+    LEFT JOIN users a ON r.alumno_id = a.id
+    WHERE r.id_reunion = ?
+  `;
+  
+  db.query(sql, [id], (err, results) => {
+    if (err) {
+      console.error('❌ Error al obtener reunión:', err);
+      return res.status(500).json({ error: 'Error al obtener reunión' });
+    }
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'Reunión no encontrada' });
+    }
+    
+    console.log('✅ Reunión obtenida:', results[0].id);
+    res.json(results[0]);
+  });
+});
+
+// Obtener una reunión por ID
+app.get('/api/reuniones/:id', (req, res) => {
+  const { id } = req.params;
+  
+  const sql = `
+    SELECT 
+      r.id_reunion as id,
+      r.estado,
+      r.profesor_id as profesorId,
+      r.alumno_id as alumnoId,
+      r.id_centro as centroId,
+      r.titulo,
+      r.asunto as tema,
+      r.aula,
+      DATE_FORMAT(r.fecha, '%Y-%m-%d') as fecha,
+      DATE_FORMAT(r.fecha, '%H:%i') as hora,
+      r.created_at,
+      p.nombre as profesor_nombre, 
+      p.apellidos as profesor_apellidos,
+      a.nombre as alumno_nombre, 
+      a.apellidos as alumno_apellidos
+    FROM reuniones r
+    LEFT JOIN users p ON r.profesor_id = p.id
+    LEFT JOIN users a ON r.alumno_id = a.id
+    WHERE r.id_reunion = ?
+  `;
+  
+  db.query(sql, [id], (err, results) => {
+    if (err) {
+      console.error('❌ Error al obtener reunión:', err);
+      return res.status(500).json({ error: 'Error al obtener reunión' });
+    }
+    if (!results || results.length === 0) {
+      return res.status(404).json({ error: 'Reunión no encontrada' });
+    }
+    
+    console.log('✅ Reunión obtenida:', results[0].id);
+    res.json(results[0]);
+  });
+});
+// Crear nueva reunión
+app.post('/api/reuniones', (req, res) => {
+  console.log('POST /api/reuniones - body recibido:', req.body);
+  
+  const { titulo, tema, fecha, hora, aula, estado, centroId, profesorId, alumnoId } = req.body;
+  
+  // Validación de campos obligatorios
+  if (!fecha || !profesorId || !alumnoId) {
+    return res.status(400).json({ 
+      error: 'Faltan campos obligatorios',
+      campos_requeridos: ['fecha', 'profesorId', 'alumnoId']
+    });
+  }
+
+  // Construir fecha completa con hora
+  const fechaHoraCompleta = `${fecha} ${hora || '00:00:00'}`;
+
+  const sql = `
+    INSERT INTO reuniones 
+    (estado, profesor_id, alumno_id, id_centro, titulo, asunto, aula, fecha, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+  `;
+  
+  const estadoFinal = estado || 'pendiente';
+  const centroFinal = centroId || 15112; // Por defecto Elorrieta
+  const tituloFinal = titulo || 'Reunión';
+  const asuntoFinal = tema || '';
+  const aulaFinal = aula || '';
+  
+  db.query(
+    sql, 
+    [estadoFinal, profesorId, alumnoId, centroFinal, tituloFinal, asuntoFinal, aulaFinal, fechaHoraCompleta], 
+    (err, result) => {
+      if (err) {
+        console.error('❌ Error al crear reunión:', err);
+        return res.status(500).json({ 
+          error: 'Error al crear reunión', 
+          detalle: err.message 
+        });
+      }
+      
+      console.log('✅ Reunión creada correctamente, ID:', result.insertId);
+      res.json({ 
+        success: true, 
+        id: result.insertId, 
+        message: 'Reunión creada correctamente' 
+      });
+    }
+  );
+});
+
+// Actualizar estado de reunión
+app.put('/api/reuniones/:id', (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+  
+  if (!estado) {
+    return res.status(400).json({ error: 'Estado es obligatorio' });
+  }
+
+  const sql = 'UPDATE reuniones SET estado = ? WHERE id = ?';
+  
+  db.query(sql, [estado, id], (err, result) => {
+    if (err) {
+      console.error('Error al actualizar reunión:', err);
+      return res.status(500).json({ error: 'Error al actualizar reunión' });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Reunión no encontrada' });
+    }
+    res.json({ success: true });
   });
 });
 

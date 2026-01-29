@@ -96,7 +96,7 @@ export class Reuniones implements OnInit {
     'alava': 'Araba'
   };
 
-  constructor(private reunionesService: reuniones) {
+  constructor(private reunionesService: reuniones, private AuthService: AuthService) {
     this.configurarFechas();
     this.verificarPermisos();
   }
@@ -120,14 +120,38 @@ export class Reuniones implements OnInit {
     this.fechaMaxima = finCurso.toISOString().split('T')[0];
   }
 
-  async cargarUsuarios() {
-    try {
-      this.profesores = await this.reunionesService.getProfesores();
-      this.alumnos = await this.reunionesService.getAlumnos();
-    } catch (error) {
-      console.error('Error cargando usuarios:', error);
+  /**
+   * Cargar profesores y alumnos desde el backend, y establecer el profesor actual. Funciona para el formulario de creación de reuniones.
+   */
+async cargarUsuarios() {
+  console.log('🔄 Cargando profesores y alumnos desde backend...');
+  
+  try {
+    // Cargar profesores
+    this.profesores = await this.reunionesService.getProfesores();
+    console.log('✅ Profesores cargados:', this.profesores.length);
+    
+    // Cargar alumnos  
+    this.alumnos = await this.reunionesService.getAlumnos();
+    console.log('✅ Alumnos cargados:', this.alumnos.length);
+
+    // Establecer profesor actual
+    const usuarioActual = this.AuthService.getLoggedUser();
+    if (usuarioActual && usuarioActual.id) {
+      this.nuevaReunion.profesorId = usuarioActual.id;
+      console.log('✅ Profesor actual establecido:', usuarioActual.id);
+    } else {
+      // Si no hay usuario logueado, usar el primer profesor de la lista
+      if (this.profesores.length > 0) {
+        this.nuevaReunion.profesorId = this.profesores[0].id;
+      }
     }
+
+  } catch (error) {
+    console.error('❌ Error cargando usuarios:', error);
+    alert('⚠️ Error al cargar profesores y alumnos. Verifica que el servidor esté ejecutándose en el puerto 3000.');
   }
+}
 
   // Abrir formulario
   abrirFormulario() {
@@ -161,21 +185,64 @@ export class Reuniones implements OnInit {
   }
 
   // Guardar reunión
-  async guardarReunion() {
-    if (!this.validarFormulario()) {
-      return;
+async guardarReunion() {
+  console.log('💾 Intentando guardar reunión:', this.nuevaReunion);
+
+  if (!this.validarFormulario()) {
+    return;
+  }
+
+  try {
+    // ✅ Asegurar que profesorId está establecido
+    if (!this.nuevaReunion.profesorId || this.nuevaReunion.profesorId === 0) {
+      const usuarioActual = this.AuthService.user;
+      if (usuarioActual && usuarioActual.id) {
+        this.nuevaReunion.profesorId = usuarioActual.id;
+      } else if (this.profesores.length > 0) {
+        this.nuevaReunion.profesorId = this.profesores[0].id;
+      } else {
+        alert('❌ Error: No se pudo determinar el profesor');
+        return;
+      }
     }
 
-    try {
-      await this.reunionesService.createReunion(this.nuevaReunion);
-      alert('✅ Reunión creada correctamente');
-      this.cerrarFormulario();
-      await this.cargarDatos(); // Recargar lista
-    } catch (error) {
-      console.error('Error creando reunión:', error);
-      alert('❌ Error al crear la reunión');
+    // ✅ Crear objeto con la estructura exacta que espera el backend
+    const reunionData = {
+      titulo: this.nuevaReunion.titulo,
+      tema: this.nuevaReunion.tema,
+      fecha: this.nuevaReunion.fecha,
+      hora: this.nuevaReunion.hora,
+      aula: this.nuevaReunion.aula,
+      estado: this.nuevaReunion.estado || 'pendiente',
+      centroId: this.nuevaReunion.centroId || 15112,
+      profesorId: this.nuevaReunion.profesorId,
+      alumnoId: this.nuevaReunion.alumnoId
+    };
+
+    console.log('📤 Enviando al servidor:', reunionData);
+
+    await this.reunionesService.createReunion(reunionData);
+    
+    alert('✅ Reunión creada correctamente');
+    console.log('✅ Reunión guardada');
+    this.cerrarFormulario();
+    await this.cargarDatos(); // Recargar lista
+    
+  } catch (error: any) {
+    console.error('❌ Error creando reunión:', error);
+    
+    // Mostrar mensaje más detallado
+    let mensaje = '❌ Error al crear la reunión';
+    if (error?.error?.error) {
+      mensaje += ': ' + error.error.error;
     }
+    if (error?.error?.campos_requeridos) {
+      mensaje += '\nCampos requeridos: ' + error.error.campos_requeridos.join(', ');
+    }
+    
+    alert(mensaje);
   }
+}
 
   validarFormulario(): boolean {
     if (!this.nuevaReunion.titulo.trim()) {

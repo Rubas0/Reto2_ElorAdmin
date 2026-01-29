@@ -211,16 +211,44 @@
           </div>
         </div>
 
-        <!-- Alumno -->
         <div class="mb-3">
-          <label class="form-label fw-bold">Alumno *</label>
-          <select class="form-select" [(ngModel)]="nuevaReunion.alumnoId" name="alumnoId">
-            <option [value]="0">-- Selecciona un alumno --</option>
-            <option *ngFor="let alumno of alumnos" [value]="alumno.id">
-              {{ alumno.apellidos }}, {{ alumno.nombre }} - {{ alumno.ciclo }} {{ alumno.curso }}º
-            </option>
-          </select>
-        </div>
+  <label class="form-label fw-bold">
+    <i class="bi bi-geo-alt"></i> Centro Educativo (Ubicación) *
+  </label>
+  <select 
+    class="form-select" 
+    [(ngModel)]="nuevaReunion.centroId"
+    name="centroId">
+    <option [value]="15112">🏫 CIFP Elorrieta-Errekamari LHII (por defecto)</option>
+    <optgroup label="Otros centros cercanos">
+      <option 
+        *ngFor="let centro of centrosList | slice:0:20" 
+        [value]="centro.codigo">
+        {{ centro.nombre }} - {{ centro.dmunic }} ({{ centro.dterre }})
+      </option>
+    </optgroup>
+  </select>
+  <small class="text-muted">
+    💡 Las reuniones pueden celebrarse en cualquier centro educativo de Euskadi
+  </small>
+</div>
+
+        <!-- Alumno -->
+       <div class="mb-3">
+  <label class="form-label fw-bold">Alumno *</label>
+  <select class="form-select" [(ngModel)]="nuevaReunion.alumnoId" name="alumnoId">
+    <option [value]="0">-- Selecciona un alumno --</option>
+    <option *ngFor="let alumno of alumnos" [value]="alumno.id">
+      {{ alumno.apellidos }}, {{ alumno.nombre }}
+    </option>
+  </select>
+  <small class="text-muted" *ngIf="alumnos.length === 0">
+    ⚠️ No hay alumnos disponibles
+  </small>
+  <small class="text-success" *ngIf="alumnos.length > 0">
+    ✅ {{ alumnos.length }} alumnos disponibles
+  </small>
+</div>
 
         <!-- Botones -->
         <div class="d-flex justify-content-end gap-2">

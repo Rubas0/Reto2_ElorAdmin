@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
 
@@ -11,8 +11,9 @@ import { firstValueFrom } from 'rxjs';
  * Servicio para gestionar las reuniones con el backend. Sirve para obtener, crear y actualizar reuniones.
  */
 export class reuniones {
-  private apiUrl = 'http://localhost:3001';
-
+  // private apiUrl = 'http://localhost:3001';
+  private apiUrl = 'http://localhost:3000/api';
+  
   constructor(private http: HttpClient) {}
 
   getAllCentros() {
@@ -37,12 +38,18 @@ export class reuniones {
 
   // Métodos de profesores 
   getProfesores() {
-    return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/profesores`));
+    const headers = new HttpHeaders({ 'x-rol': 'god' }); // Header para permisos 
+    return firstValueFrom(
+      this.http.get<any[]>(`${this.apiUrl}/usuarios?rol=profesor`, { headers })
+    );
   }
 
   // Métodos de alumnos 
-  getAlumnos() {
-    return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/alumnos`));
+getAlumnos() {
+    const headers = new HttpHeaders({ 'x-rol': 'god' }); // Header para permisos
+    return firstValueFrom(
+      this.http.get<any[]>(`${this.apiUrl}/usuarios?rol=alumno`, { headers })
+    );
   }
 
 }
