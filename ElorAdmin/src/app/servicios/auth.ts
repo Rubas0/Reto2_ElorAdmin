@@ -27,9 +27,9 @@ export class AuthService {
   }
 
   // Marca sesión y guarda usuario
-  // Guardar usuario logueado
+  // Guardar usuario logueado usando tipo_id para mapear rol si es necesario
   setLoggedIn(usuario: any): void {
-    // ⭐ Mapear tipo_id a rol si no existe
+    //  Mapear tipo_id a rol si no existe
     if (! usuario.rol && usuario.tipo_id) {
       const tipoMap: Record<number, string> = {
         1: 'god',
@@ -40,7 +40,7 @@ export class AuthService {
       usuario.rol = tipoMap[usuario.tipo_id] || '';
     }
 
-    // ⭐ Normalizar rol
+    //  Normalizar rol
     if (usuario.rol) {
       usuario.rol = usuario.rol.toLowerCase().trim();
     }
@@ -50,7 +50,7 @@ export class AuthService {
     this._isLoggedIn = true;
     localStorage.setItem('user', JSON.stringify(usuario));
 
-    console.log('✅ Usuario logueado:', usuario);
+    console.log(' Usuario logueado:', usuario);
   }
 
   // Obtener usuario logueado
@@ -75,10 +75,10 @@ export class AuthService {
   // Rol en minúsculas del usuario actual
   getRol(): string {
     const u = this.user;
-    // pruebas de depuración
-  console.log('🔍 authService.getRol() - Usuario:', u);
-  console.log('🔍 authService. getRol() - Rol:', u?.rol);
-  console.log('🔍 authService.getRol() - tipo_id:', u?.tipo_id);
+    // pruebas debug
+  console.log(' authService.getRol() - Usuario:', u);
+  console.log(' authService. getRol() - Rol:', u?.rol);
+  console.log(' authService.getRol() - tipo_id:', u?.tipo_id);
 
     return String(u?.rol || '').toLowerCase();
   
@@ -94,5 +94,4 @@ export class AuthService {
     this._isLoggedIn = false;
     localStorage.removeItem('user');
   }
-
 }

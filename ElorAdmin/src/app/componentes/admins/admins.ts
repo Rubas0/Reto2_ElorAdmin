@@ -46,7 +46,7 @@ export class Admins implements OnInit {
     password: '' 
   };
 
-  // Toast de notificaciones ✅
+  // Toast de notificaciones 
   mostrarToast: boolean = false;
   mensajeToast: string = '';
   tipoToast: 'success' | 'error' | 'info' = 'info';

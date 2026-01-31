@@ -3,7 +3,7 @@ export interface User {
   username: string;
   nombre: string;
   apellidos: string;
-  rol: RoleType; // god | admin | profesor | alumno
+  rol: RoleType; 
 }
 
 export type RoleType = 'god' | 'admin' | 'profesor' | 'alumno';

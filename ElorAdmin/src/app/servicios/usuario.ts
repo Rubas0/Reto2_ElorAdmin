@@ -54,7 +54,7 @@ getUsuarios(rol?: string, q?: string): Observable<any[]> {
     return this.http.post(`${this.apiUrl}/usuarios`, body, { headers: this.headers() });
   }
 
-
+// --- CRUD administra: Modificación ---
    editarUsuario(id: number, body: { nombre: string; apellidos: string; email: string; rol: string; password?: string }): Observable<any> {
     return this.http.put(`${this.apiUrl}/usuarios/${id}`, body, { headers: this.headers() });
   }
@@ -70,7 +70,7 @@ getUsuarios(rol?: string, q?: string): Observable<any[]> {
     return this.http.delete(`${this.apiUrl}/usuarios/${id}`, { headers: this.headers() });
   }
 
- 
+  // --- CRUD administra: Consulta ---
   // Obtener usuario por ID
   getById(id: number): Observable<UsuarioDTO> {
     return this.http.get<UsuarioDTO>(`${this.apiUrl}/users/${id}`);
