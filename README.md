@@ -20,9 +20,11 @@ Una aplicación web en Angular para gestionar usuarios y reuniones del CIFP Elor
 
 ## Inicio rápido
 1) Requisitos: Node LTS, Angular CLI, XAMPP MySQL activo  
-2) Configura endpoints y claves en `environment.*` (API/BD y mapa)  
-3) `npm install`  
+2) `npm install`
 4) `ng serve` → abre http://localhost:4200 (login como vista por defecto)
+5) Generar claves en el backend con `node genera_claves.js`
+6) `node index.js` en el Backend
+
 
 ## Aprendizajes clave
 - Diseño de rutas y protección granular con Guards
@@ -55,6 +57,20 @@ Instala todos mediante npm, por ejemplo:
 - **express**  
   Framework para crear el servidor REST.
 
+# Resumen funcional
+* Login
+  - Frontend cifra la contraseña con la clave pública (PUBLIC_KEY) y la envía al backend.
+  - Backend descifra con clave privada, hashea y valida en BBDD.
+  - Redirección según rol: god/admin/profesor/alumno.
+* Profesores
+  - Pueden consultar listado de profesores y alumnos (filtros/búsqueda).
+  - Pueden ver su horario y sus reuniones.
+* Administradores/God
+  - CRUD de usuarios (con control de roles) y resumen de totales.
+* Reuniones
+  - Listado filtrable de centros (DTITUC, DTERRE, DMUNIC), paginado.
+  - Detalle de centro con mapa (Mapbox) y pin en la ubicación.
+  - Creación/consulta de reuniones (con validaciones y estados).
 
 ## Ejemplo de instalación
 

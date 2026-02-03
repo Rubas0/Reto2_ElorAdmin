@@ -99,7 +99,7 @@ export class ReunionDetalle implements OnInit, AfterViewInit {
       const centros: Centro[] = await response.json();
       
       // Buscar el centro por código
-      // Nota: Asumimos que centroId es el índice o usamos un centro por defecto
+      // Nota: Usamos nuestro centro por defecto
       this.centro = centros[0] || {
         codigo: '15112',
         nombre: 'CIFP Elorrieta-Errekamari LHII',
@@ -111,7 +111,7 @@ export class ReunionDetalle implements OnInit, AfterViewInit {
         direccion: 'San Adrián, 3'
       };
       
-      console.log('✅ Centro cargado:', this.centro.nombre);
+      console.log(' Centro cargado:', this.centro.nombre);
       
     } catch (error) {
       console.error('Error cargando centro:', error);
@@ -148,7 +148,7 @@ export class ReunionDetalle implements OnInit, AfterViewInit {
         writable: false
       });
 
-      console.log('🗺️ Inicializando mapa en:', this.centro.nombre);
+      console.log('Inicializando mapa en:', this.centro.nombre);
 
       this.map = new mapboxgl.Map({
         container: 'mapa-reunion',
@@ -162,12 +162,12 @@ export class ReunionDetalle implements OnInit, AfterViewInit {
 
       // Evento cuando el mapa carga
       this.map.on('load', () => {
-        console.log('✅ Mapa cargado correctamente');
+        console.log(' Mapa cargado correctamente');
         this.agregarMarcador();
       });
 
     } catch (error) {
-      console.error('❌ Error inicializando el mapa:', error);
+      console.error(' Error inicializando el mapa:', error);
       this.error = 'Error al cargar el mapa';
     }
   }
@@ -185,16 +185,16 @@ export class ReunionDetalle implements OnInit, AfterViewInit {
         new mapboxgl.Popup({ offset: 25 }).setHTML(`
           <div style="padding: 12px; font-family: Arial, sans-serif;">
             <h6 style="margin: 0 0 8px 0; color: #0066cc; font-size: 14px; font-weight: bold;">
-              🏫 ${this.centro.nombre}
+               ${this.centro.nombre}
             </h6>
             <p style="margin: 4px 0; font-size: 12px; color: #555;">
-              📍 ${this.centro.direccion || 'Sin dirección'}
+               ${this.centro.direccion || 'Sin dirección'}
             </p>
             <p style="margin: 4px 0; font-size: 12px; color: #555;">
-              🏙️ ${this.centro.dmunic}, ${this.centro.dterre}
+               ${this.centro.dmunic}, ${this.centro.dterre}
             </p>
             <p style="margin: 4px 0 0 0; font-size: 11px; color: #999;">
-              📐 ${this.centro.lat.toFixed(4)}, ${this.centro.lon.toFixed(4)}
+               ${this.centro.lat.toFixed(4)}, ${this.centro.lon.toFixed(4)}
             </p>
           </div>
         `)
@@ -204,7 +204,7 @@ export class ReunionDetalle implements OnInit, AfterViewInit {
     // Abrir el popup automáticamente
     marker.togglePopup();
 
-    console.log('✅ Marcador añadido correctamente');
+    console.log(' Marcador añadido correctamente');
   }
 
   getEstadoClass(estado: string): string {
@@ -221,7 +221,7 @@ export class ReunionDetalle implements OnInit, AfterViewInit {
     // Limpiar el mapa al destruir el componente
     if (this.map) {
       this.map.remove();
-      console.log('🗑️ Mapa eliminado');
+      console.log(' Mapa eliminado');
     }
   }
 }

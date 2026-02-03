@@ -10,7 +10,10 @@ import { Profesores } from './componentes/profesores/profesores';
 import { Reuniones } from './componentes/reuniones/reuniones';
 import { ReunionDetalle } from './componentes/reunion-detalle/reunion-detalle';
 
-
+/**
+ * Definición de las rutas de la aplicación Angular.
+ * Cada ruta está asociada a un componente y puede tener guardias de acceso. Es decir, quién puede acceder a cada ruta.
+ */
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'home', component: Home, canActivate: [authGuard] },
@@ -18,8 +21,8 @@ export const routes: Routes = [
   { path: 'admins', component: Admins, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'administrador', 'god'] } },
   { path: 'alumnos', component: Alumnos, canActivate: [authGuard, roleGuard], data: { roles: ['alumno'] } },
   { path: 'profesores', component: Profesores, canActivate: [authGuard, roleGuard], data: { roles: ['profesor'] } },
-  { path: 'reuniones', component: Reuniones },
-  { path: 'reunion-detalle/:id', component: ReunionDetalle },
+  { path: 'reuniones', component: Reuniones }, // TODO: falta proteger esta ruta
+  { path: 'reunion-detalle/:id', component: ReunionDetalle }, // TODO: falta proteger esta ruta 
   { path: '**', redirectTo: 'login' } // cualquier otra ruta redirige a login
 ];
 

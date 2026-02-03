@@ -12,7 +12,7 @@ import { firstValueFrom } from 'rxjs';
  */
 export class reuniones {
   // private apiUrl = 'http://localhost:3001';
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'http://localhost:3000/api'; // usamso mismo backend que AuthService, pueto 3000 porque es el principal
   
   constructor(private http: HttpClient) {}
 

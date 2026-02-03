@@ -33,7 +33,7 @@ export class Profesores implements OnInit {
       return;
     }
 
-    console.log('✅ Usuario logueado:', this.profesor);
+    console.log('Usuario logueado:', this.profesor);
     
     // Retrasa la carga inicial para evitar error NG0100 de angular 
     setTimeout(() => this.cargarProfesores(), 0);
@@ -50,7 +50,7 @@ export class Profesores implements OnInit {
         console.log('✅ Profesores cargados:', this.profesores.length);
       },
       error: (err) => {
-        console.error('❌ Error al cargar profesores:', err);
+        console.error('Error al cargar profesores:', err);
         this.error = 'Error al cargar profesores';
         this.profesores = [];  // Resetea a array vacío en caso de error
         this.loading = false;
@@ -69,7 +69,7 @@ export class Profesores implements OnInit {
         console.log('✅ Alumnos cargados:', this.alumnos.length);
       },
       error: (err) => {
-        console.error('❌ Error al cargar alumnos:', err);
+        console.error('Error al cargar alumnos:', err);
         this.error = 'Error al cargar alumnos';
         this.alumnos = []; // Resetea a array vacío en caso de error
         this.loading = false;

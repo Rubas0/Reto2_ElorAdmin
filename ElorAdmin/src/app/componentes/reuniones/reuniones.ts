@@ -42,7 +42,7 @@ interface Reunion {
   styleUrls: ['./reuniones.css'],
 })
 export class Reuniones implements OnInit {
-  // Paginación ✅
+  // Paginación 
   p: number = 1;
   itemsPerPage: number = 10;
 
@@ -129,17 +129,17 @@ async cargarUsuarios() {
   try {
     // Cargar profesores
     this.profesores = await this.reunionesService.getProfesores();
-    console.log('✅ Profesores cargados:', this.profesores.length);
+    console.log(' Profesores cargados:', this.profesores.length);
     
     // Cargar alumnos  
     this.alumnos = await this.reunionesService.getAlumnos();
-    console.log('✅ Alumnos cargados:', this.alumnos.length);
+    console.log(' Alumnos cargados:', this.alumnos.length);
 
     // Establecer profesor actual
     const usuarioActual = this.AuthService.getLoggedUser();
     if (usuarioActual && usuarioActual.id) {
       this.nuevaReunion.profesorId = usuarioActual.id;
-      console.log('✅ Profesor actual establecido:', usuarioActual.id);
+      console.log(' Profesor actual establecido:', usuarioActual.id);
     } else {
       // Si no hay usuario logueado, usar el primer profesor de la lista
       if (this.profesores.length > 0) {
@@ -148,7 +148,7 @@ async cargarUsuarios() {
     }
 
   } catch (error) {
-    console.error('❌ Error cargando usuarios:', error);
+    console.error(' Error cargando usuarios:', error);
     alert('⚠️ Error al cargar profesores y alumnos. Verifica que el servidor esté ejecutándose en el puerto 3000.');
   }
 }
@@ -186,14 +186,14 @@ async cargarUsuarios() {
 
   // Guardar reunión
 async guardarReunion() {
-  console.log('💾 Intentando guardar reunión:', this.nuevaReunion);
+  console.log(' Intentando guardar reunión:', this.nuevaReunion);
 
   if (!this.validarFormulario()) {
     return;
   }
 
   try {
-    // ✅ Asegurar que profesorId está establecido
+    // Asegurar que profesorId está establecido
     if (!this.nuevaReunion.profesorId || this.nuevaReunion.profesorId === 0) {
       const usuarioActual = this.AuthService.user;
       if (usuarioActual && usuarioActual.id) {
@@ -201,12 +201,12 @@ async guardarReunion() {
       } else if (this.profesores.length > 0) {
         this.nuevaReunion.profesorId = this.profesores[0].id;
       } else {
-        alert('❌ Error: No se pudo determinar el profesor');
+        alert(' Error: No se pudo determinar el profesor');
         return;
       }
     }
 
-    // ✅ Crear objeto con la estructura exacta que espera el backend
+    //  Crear objeto con la estructura exacta que espera el backend
     const reunionData = {
       titulo: this.nuevaReunion.titulo,
       tema: this.nuevaReunion.tema,
@@ -219,20 +219,20 @@ async guardarReunion() {
       alumnoId: this.nuevaReunion.alumnoId
     };
 
-    console.log('📤 Enviando al servidor:', reunionData);
+    console.log(' Enviando al servidor:', reunionData);
 
     await this.reunionesService.createReunion(reunionData);
     
-    alert('✅ Reunión creada correctamente');
-    console.log('✅ Reunión guardada');
+    alert(' Reunión creada correctamente');
+    console.log(' Reunión guardada');
     this.cerrarFormulario();
     await this.cargarDatos(); // Recargar lista
     
   } catch (error: any) {
-    console.error('❌ Error creando reunión:', error);
+    console.error(' Error creando reunión:', error);
     
     // Mostrar mensaje más detallado
-    let mensaje = '❌ Error al crear la reunión';
+    let mensaje = ' Error al crear la reunión';
     if (error?.error?.error) {
       mensaje += ': ' + error.error.error;
     }
@@ -244,6 +244,9 @@ async guardarReunion() {
   }
 }
 
+/**
+ * Validar formulario antes de enviar, mostrando alertas si hay errores.
+ */
   validarFormulario(): boolean {
     if (!this.nuevaReunion.titulo.trim()) {
       alert('El título es obligatorio');
@@ -272,6 +275,9 @@ async guardarReunion() {
     return true;
   }
 
+  /**
+   * Cargar datos iniciales: centros y reuniones, y preparar filtros.
+   */
   async cargarDatos() {
     try {
       // Cargar centros desde EuskadiLatLon.json
@@ -288,7 +294,7 @@ async guardarReunion() {
       // Cargar reuniones desde json-server
       this.reunionesList = await this.reunionesService.getAllReuniones();
       
-      // Enriquecer reuniones con datos del centro
+      // Asociar centros a reuniones
       this.reunionesList = this.reunionesList.map(reunion => ({
         ...reunion,
         centro: this.centrosList.find(c => c.id === reunion.centroId)
@@ -326,6 +332,7 @@ async guardarReunion() {
     return Array.from(municipios).sort();
   }
 
+  // Eventos de cambio en filtros
   onTipoCentroChange() {
     this.territorioSeleccionado = '';
     this.municipioSeleccionado = '';
@@ -333,12 +340,14 @@ async guardarReunion() {
     this.aplicarFiltros();
   }
 
+  // Evento al cambiar territorio
   onTerritorioChange() {
     this.municipioSeleccionado = '';
     this.actualizarMunicipios();
     this.aplicarFiltros();
   }
 
+  // Evento al cambiar municipio
   onMunicipioChange() {
     this.aplicarFiltros();
   }
@@ -402,6 +411,9 @@ async guardarReunion() {
     return this.filteredReuniones.length;
   }
 
+  /**
+   * Obtener la clase CSS correspondiente al estado de una reunión. 
+   */
   getEstadoClass(estado: string): string {
     const clases: { [key: string]: string } = {
       'Pendiente': 'badge bg-warning text-dark',

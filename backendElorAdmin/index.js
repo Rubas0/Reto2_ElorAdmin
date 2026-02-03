@@ -37,7 +37,7 @@ app.use(cors()); // permite peticiones desde localhost:4200
 app.use(express.json()); // parsea JSON en el body para que pueda enviar datos como JSON
 
 const db = mysql.createConnection({
-  host: 'localhost',    // cambiar si usas otra máquina
+  host: 'localhost',    // cambiar si usamos otra máquina
   user: 'root',
   port: '3307',
   password: '',
@@ -314,11 +314,11 @@ app.get('/api/reuniones', (req, res) => {
   
   db.query(sql, (err, results) => {
     if (err) {
-      console.error('❌ Error al listar reuniones:', err);
+      console.error(' Error al listar reuniones:', err);
       return res.status(500).json({ error: 'Error al listar reuniones', detalle: err.message });
     }
     
-    console.log('✅ Reuniones cargadas:', results.length);
+    console.log(' Reuniones cargadas:', results.length);
     res.json(results);
   });
 });
@@ -353,14 +353,14 @@ app.get('/api/reuniones/:id', (req, res) => {
   
   db.query(sql, [id], (err, results) => {
     if (err) {
-      console.error('❌ Error al obtener reunión:', err);
+      console.error(' Error al obtener reunión:', err);
       return res.status(500).json({ error: 'Error al obtener reunión' });
     }
     if (!results || results.length === 0) {
       return res.status(404).json({ error: 'Reunión no encontrada' });
     }
     
-    console.log('✅ Reunión obtenida:', results[0].id);
+    console.log(' Reunión obtenida:', results[0].id);
     res.json(results[0]);
   });
 });
@@ -394,14 +394,14 @@ app.get('/api/reuniones/:id', (req, res) => {
   
   db.query(sql, [id], (err, results) => {
     if (err) {
-      console.error('❌ Error al obtener reunión:', err);
+      console.error(' Error al obtener reunión:', err);
       return res.status(500).json({ error: 'Error al obtener reunión' });
     }
     if (!results || results.length === 0) {
       return res.status(404).json({ error: 'Reunión no encontrada' });
     }
     
-    console.log('✅ Reunión obtenida:', results[0].id);
+    console.log(' Reunión obtenida:', results[0].id);
     res.json(results[0]);
   });
 });
@@ -439,14 +439,14 @@ app.post('/api/reuniones', (req, res) => {
     [estadoFinal, profesorId, alumnoId, centroFinal, tituloFinal, asuntoFinal, aulaFinal, fechaHoraCompleta], 
     (err, result) => {
       if (err) {
-        console.error('❌ Error al crear reunión:', err);
+        console.error('Error al crear reunión:', err);
         return res.status(500).json({ 
           error: 'Error al crear reunión', 
           detalle: err.message 
         });
       }
       
-      console.log('✅ Reunión creada correctamente, ID:', result.insertId);
+      console.log(' Reunión creada correctamente, ID:', result.insertId);
       res.json({ 
         success: true, 
         id: result.insertId, 
@@ -469,7 +469,7 @@ app.put('/api/reuniones/:id', (req, res) => {
   
   db.query(sql, [estado, id], (err, result) => {
     if (err) {
-      console.error('Error al actualizar reunión:', err);
+      console.error(' Error al actualizar reunión:', err);
       return res.status(500).json({ error: 'Error al actualizar reunión' });
     }
     if (result.affectedRows === 0) {
