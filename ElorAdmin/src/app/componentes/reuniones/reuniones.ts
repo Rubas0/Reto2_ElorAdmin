@@ -4,8 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Usuario } from '../../servicios/usuario';
 import { AuthService } from '../../servicios/auth';
 import { NgxPaginationModule } from 'ngx-pagination';
-import { reuniones } from '../../servicios/reuniones';
+import { ReunionesService } from '../../servicios/ReunionesService';
 import { RouterModule } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
  
 
 interface Centro {
@@ -42,6 +43,86 @@ interface Reunion {
   styleUrls: ['./reuniones.css'],
 })
 export class Reuniones implements OnInit {
+
+
+
+  // Parte de idiomas con i18n simple, texto en objetos
+   idioma: 'es'|'eu'|'en' = 'es'; // Idioma actual
+
+ textos = {
+    es: {
+      gestion: 'Gestión de Reuniones',
+      filtros: 'Filtros de Centros',
+      nueva: 'Nueva Reunión',
+      tipoCentro: 'Tipo de Centro',
+      territorio: 'Territorio',
+      municipio: 'Municipio',
+      total: 'Total reuniones filtradas',
+      tabla: 'Listado de Reuniones',
+      titulo: 'Título',
+      tema: 'Tema',
+      fecha: 'Fecha',
+      hora: 'Hora',
+      aula: 'Aula',
+      centro: 'Centro',
+      estado: 'Estado',
+      acciones: 'Acciones',
+      mapa: 'Ver Mapa',
+      anterior: 'Anterior',
+      siguiente: 'Siguiente',
+      noReuniones: 'No hay reuniones para mostrar.'
+    },
+    eu: {
+      gestion: 'Bilerak Kudeatzea',
+      filtros: 'Zentroen iragazkiak',
+      nueva: 'Bileria berria',
+      tipoCentro: 'Zentro mota',
+      territorio: 'Lurraldea',
+      municipio: 'Udalerria',
+      total: 'Iragazitako bilerak guztira',
+      tabla: 'Bilerak zerrenda',
+      titulo: 'Izenburua',
+      tema: 'Gaia',
+      fecha: 'Data',
+      hora: 'Ordua',
+      aula: 'Gela',
+      centro: 'Zentroa',
+      estado: 'Egoera',
+      acciones: 'Ekintzak',
+      mapa: 'Mapa ikusi',
+      anterior: 'Aurrekoa',
+      siguiente: 'Hurrengoa',
+      noReuniones: 'Ez dago bilerarik erakusteko.'
+    },
+    en: {
+      gestion: 'Meeting Management',
+      filtros: 'Center Filters',
+      nueva: 'New Meeting',
+      tipoCentro: 'Center Type',
+      territorio: 'Territory',
+      municipio: 'Municipality',
+      total: 'Total filtered meetings',
+      tabla: 'Meetings List',
+      titulo: 'Title',
+      tema: 'Topic',
+      fecha: 'Date',
+      hora: 'Time',
+      aula: 'Room',
+      centro: 'Center',
+      estado: 'Status',
+      acciones: 'Actions',
+      mapa: 'View Map',
+      anterior: 'Previous',
+      siguiente: 'Next',
+      noReuniones: 'No meetings to display.'
+    }
+  };
+
+  cambiarIdioma(id: 'es'|'en'|'eu') {
+    this.idioma = id;
+  }
+
+
   // Paginación 
   p: number = 1;
   itemsPerPage: number = 10;
@@ -96,20 +177,25 @@ export class Reuniones implements OnInit {
     'alava': 'Araba'
   };
 
-  constructor(private reunionesService: reuniones, private AuthService: AuthService) {
+  constructor(private reunionesService: ReunionesService, private AuthService: AuthService, private route: ActivatedRoute) {
     this.configurarFechas();
     this.verificarPermisos();
   }
 
   async ngOnInit() {
+    this.verificarPermisos();
     await this.cargarDatos();
     await this.cargarUsuarios();
+    // Abrir el formulario si viene ?crear=1
+    const crear = this.route.snapshot.queryParamMap.get('crear'); // '1' para abrir el formulario automáticamente
+    if (crear === '1') this.abrirFormulario();
   }
 
   verificarPermisos() {
     // Aquí deberíamos verificar si el usuario es profesor 
     // Por ahora lo dejamos en true para pruebas
-    this.esProfesor = true; //TODO: Implementar verificación solo si es profesor
+     const u = this.AuthService.user || this.AuthService.getLoggedUser?.();
+    this.esProfesor = !!u && (u.rol?.toLowerCase?.() === 'profesor' || u.tipo_id === 3 || true);
   }
 
   configurarFechas() {
@@ -124,7 +210,7 @@ export class Reuniones implements OnInit {
    * Cargar profesores y alumnos desde el backend, y establecer el profesor actual. Funciona para el formulario de creación de reuniones.
    */
 async cargarUsuarios() {
-  console.log('🔄 Cargando profesores y alumnos desde backend...');
+  console.log(' Cargando profesores y alumnos desde backend...');
   
   try {
     // Cargar profesores
@@ -149,7 +235,7 @@ async cargarUsuarios() {
 
   } catch (error) {
     console.error(' Error cargando usuarios:', error);
-    alert('⚠️ Error al cargar profesores y alumnos. Verifica que el servidor esté ejecutándose en el puerto 3000.');
+    alert(' Error al cargar profesores y alumnos. Verifica que el servidor esté ejecutándose en el puerto 3000.');
   }
 }
 
@@ -281,7 +367,7 @@ async guardarReunion() {
   async cargarDatos() {
     try {
       // Cargar centros desde EuskadiLatLon.json
-      const response = await fetch('assets/data/EuskadiLatLon.json');
+      const response = await fetch('http://localhost:3001/CENTROS');
       this.centrosList = await response.json();
       
       // Normalizar territorios
@@ -295,14 +381,14 @@ async guardarReunion() {
       this.reunionesList = await this.reunionesService.getAllReuniones();
       
       // Asociar centros a reuniones
-      this.reunionesList = this.reunionesList.map(reunion => ({
-        ...reunion,
-        centro: this.centrosList.find(c => c.id === reunion.centroId)
+     this.reunionesList = this.reunionesList.map(r => ({
+        ...r,
+        centro: this.findCentroByRef(r.centroId) // Buscar centro por código o id
       }));
 
       this.filteredReuniones = [...this.reunionesList];
       
-      // Inicializar filtros
+      // Inicializar filtros para la UI, tanto tipos de centro como territorios y municipios
       this.tiposCentro = this.getTiposCentroUnicos();
       this.territorios = this.getTerritoriosUnicos();
       this.municipios = this.getMunicipiosGlobales();
@@ -312,25 +398,49 @@ async guardarReunion() {
     }
   }
 
-  normalizarTerritorio(territorio: string): string {
-    const territorioLower = territorio.trim().toLowerCase();
-    return this.MAPA_TERRITORIOS[territorioLower] || territorio.trim();
+    // Buscar centro por codigo o id, método privado para uso interno
+  private findCentroByRef(ref: string | number): Centro | undefined {
+    const refStr = String(ref);
+    return (
+      this.centrosList.find(c => String(c.codigo) === refStr) ||
+      this.centrosList.find(c => String(c.id) === refStr)
+    );
   }
 
-  getTiposCentroUnicos(): string[] {
-    const tipos = new Set(this.centrosList.map(c => c.dtituc));
-    return ['Todos', ...Array.from(tipos)].sort();
-  }
+ normalizarTerritorio(territorio: string): string {
+  // Protección contra undefined, null o valores vacíos, efectivo para evitar errores y asegurar consistencia
+  if (!territorio) return 'Sin territorio';
+  
+  const key = territorio.trim().toLowerCase();
+  return this.MAPA_TERRITORIOS[key] || territorio.trim();
+}
 
-  getTerritoriosUnicos(): string[] {
-    const territorios = new Set(this.centrosList.map(c => c.dterre));
-    return Array.from(territorios).sort();
-  }
+getTiposCentroUnicos(): string[] {
+  const tipos = new Set(
+    this.centrosList
+      .map(c => (c.dtituc || '').trim())
+      .filter(Boolean) // Elimina valores vacíos
+  );
+  return ['Todos', ...Array.from(tipos)].sort(); // Añadir opción "Todos" al inicio
+}
 
-  getMunicipiosGlobales(): string[] {
-    const municipios = new Set(this.centrosList.map(c => c.dmunic));
-    return Array.from(municipios).sort();
-  }
+getTerritoriosUnicos(): string[] {
+  const set = new Set(
+    this.centrosList
+      .map(c => c.dterre || 'Sin territorio') // Asignar 'Sin territorio' si está vacío
+      .filter(Boolean)
+  );
+  return Array.from(set).sort();
+}
+
+getMunicipiosGlobales(): string[] {
+  const set = new Set(
+    this.centrosList
+      .map(c => (c.dmunic || '').trim()) // Trim para limpieza, usamos '' si es null/undefined
+      .filter(Boolean)
+  );
+  return Array.from(set).sort();
+}
 
   // Eventos de cambio en filtros
   onTipoCentroChange() {

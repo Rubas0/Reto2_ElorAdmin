@@ -1,7 +1,7 @@
-import { Component, OnInit, inject, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewChecked, OnDestroy, inject, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { reuniones } from '../../servicios/reuniones';
+import { ReunionesService } from '../../servicios/ReunionesService';
 import mapboxgl from 'mapbox-gl';
 
 interface Centro {
@@ -35,87 +35,92 @@ interface Reunion {
   templateUrl: './reunion-detalle.html',
   styleUrls: ['./reunion-detalle.css']
 })
-export class ReunionDetalle implements OnInit, AfterViewInit {
-  reunionesService = inject(reuniones);
-  route = inject(ActivatedRoute);
+export class ReunionDetalle implements OnInit, AfterViewChecked, OnDestroy {
+  private readonly reunionesService = inject(ReunionesService);
+  private readonly route = inject(ActivatedRoute);
 
   reunion: Reunion | null = null;
   centro: Centro | null = null;
-  map!: mapboxgl.Map;
-  mapLoaded = false;
+
   loading = true;
   error = '';
 
-  // Token de Mapbox
-  private readonly MAPBOX_TOKEN = 'pk.eyJ1IjoiaW92aWVkbyIsImEiOiJjbWo0ZDl5aGQwMDR2MmtzN3R4azRlZXRjIn0.4KYxMpPfQ7vZHh0Ix5eEaA';
+  // Referencia REAL al div del mapa cuando el *ngIf lo pinta
+  @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
 
-  ngOnInit() {
+  private map?: mapboxgl.Map;
+  private mapInicializado = false;
+
+  private readonly MAPBOX_TOKEN =
+    'pk.eyJ1IjoiaW92aWVkbyIsImEiOiJjbWo0ZDl5aGQwMDR2MmtzN3R4azRlZXRjIn0.4KYxMpPfQ7vZHh0Ix5eEaA';
+
+  ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (id) {
-      this.cargarReunion(id);
-    } else {
+    if (!id) {
       this.error = 'ID de reunión no válido';
       this.loading = false;
+      return;
+    }
+    this.cargarReunion(id);
+  }
+
+  /**
+   * AfterViewChecked se ejecuta cuando Angular termina de pintar la vista.
+   * Es la forma más simple de asegurarnos de que el div del mapa existe.
+   */
+  ngAfterViewChecked(): void {
+    // Solo inicializar cuando:
+    // - ya tenemos centro
+    // - el contenedor del mapa existe
+    // - y todavía no hemos creado el mapa
+    if (!this.mapInicializado && this.centro && this.mapContainer?.nativeElement) {
+      this.inicializarMapaSimple();
     }
   }
 
-  ngAfterViewInit() {
-    // El mapa se inicializará después de cargar los datos
-  }
-
-  async cargarReunion(id: number) {
+  private async cargarReunion(id: number): Promise<void> {
     try {
       this.loading = true;
-      
-      // Cargar reunión desde json-server
+
       this.reunion = await this.reunionesService.getReunionById(id);
-      
       if (!this.reunion) {
         this.error = 'Reunión no encontrada';
         this.loading = false;
         return;
       }
 
-      // Cargar centro desde EuskadiLatLon.json
       await this.cargarCentro(this.reunion.centroId);
-      
+
       this.loading = false;
-      this.mapLoaded = true;
-      
-      // Esperar un tick para asegurar que el DOM está listo
-      setTimeout(() => this.inicializarMapa(), 100);
-      
-    } catch (error) {
-      console.error('Error cargando reunión:', error);
+      // Nota: el mapa NO se inicializa aquí a la fuerza.
+      // Lo hará ngAfterViewChecked cuando el *ngIf ya haya dibujado el contenedor.
+    } catch (e) {
+      console.error('Error cargando reunión:', e);
       this.error = 'Error al cargar la información de la reunión';
       this.loading = false;
     }
   }
 
-  async cargarCentro(centroId: number) {
+  private async cargarCentro(centroId: number): Promise<void> {
     try {
-      // Cargar centros desde EuskadiLatLon.json
-      const response = await fetch('assets/data/EuskadiLatLon.json');
-      const centros: Centro[] = await response.json();
-      
-      // Buscar el centro por código
-      // Nota: Usamos nuestro centro por defecto
-      this.centro = centros[0] || {
-        codigo: '15112',
-        nombre: 'CIFP Elorrieta-Errekamari LHII',
-        dtituc: 'Departamento de Educación',
-        dterre: 'Bizkaia',
-        dmunic: 'Bilbao',
-        lat: 43.2627,
-        lon: -2.9253,
-        direccion: 'San Adrián, 3'
-      };
-      
-      console.log(' Centro cargado:', this.centro.nombre);
-      
-    } catch (error) {
-      console.error('Error cargando centro:', error);
-      // Centro por defecto: Elorrieta
+      const centros = await this.reunionesService.getAllCentros();
+      const ref = String(centroId);
+
+      this.centro =
+        centros.find((c: Centro) => String(c.codigo) === ref) ||
+        centros[0] || {
+          codigo: '15112',
+          nombre: 'CIFP Elorrieta-Errekamari LHII',
+          dtituc: 'Departamento de Educación',
+          dterre: 'Bizkaia',
+          dmunic: 'Bilbao',
+          lat: 43.2627,
+          lon: -2.9253,
+          direccion: 'San Adrián, 3'
+        };
+    } catch (e) {
+      console.error('Error cargando centro:', e);
+      // Fallback
       this.centro = {
         codigo: '15112',
         nombre: 'CIFP Elorrieta-Errekamari LHII',
@@ -129,99 +134,60 @@ export class ReunionDetalle implements OnInit, AfterViewInit {
     }
   }
 
-  inicializarMapa() {
-    if (!this.centro) {
-      console.error('No se puede inicializar el mapa: falta el centro');
-      return;
-    }
+  /**
+   * Inicialización SIMPLE del mapa (para probarlo).
+   * Si esto funciona, luego añadimos el marcador.
+   */
+  private inicializarMapaSimple(): void {
+    if (!this.centro || !this.mapContainer?.nativeElement) return;
 
-    const contenedor = document.getElementById('mapa-reunion');
-    if (!contenedor) {
-      console.error('No se puede inicializar el mapa: falta el contenedor');
+    const lon = Number(this.centro.lon);
+    const lat = Number(this.centro.lat);
+
+    if (Number.isNaN(lon) || Number.isNaN(lat)) {
+      this.error = 'Coordenadas del centro no válidas';
       return;
     }
 
     try {
-      // Configurar el token de Mapbox correctamente
-      Object.defineProperty(mapboxgl, 'accessToken', {
-        value: this.MAPBOX_TOKEN,
-        writable: false
-      });
-
-      console.log('Inicializando mapa en:', this.centro.nombre);
+      this.mapInicializado = true;
+      (mapboxgl as any).accessToken = this.MAPBOX_TOKEN;
 
       this.map = new mapboxgl.Map({
-        container: 'mapa-reunion',
+        container: this.mapContainer.nativeElement, // <- no id, el elemento real
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [this.centro.lon, this.centro.lat],
-        zoom: 15
+        center: [lon, lat], // orden correcto [lon, lat]
+        zoom: 14
       });
 
-      // Agregar controles de navegación
       this.map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-      // Evento cuando el mapa carga
+      // Marcador opcional (cuando el mapa funcione, descomenta para rúbrica)
       this.map.on('load', () => {
-        console.log(' Mapa cargado correctamente');
-        this.agregarMarcador();
+        new mapboxgl.Marker({ color: '#0066cc' })
+          .setLngLat([lon, lat])
+          // .addTo(this.map);
       });
-
-    } catch (error) {
-      console.error(' Error inicializando el mapa:', error);
+    } catch (e) {
+      console.error('Error inicializando mapa:', e);
       this.error = 'Error al cargar el mapa';
     }
   }
 
-  agregarMarcador() {
-    if (!this.centro || !this.map) return;
 
-    // Crear el marcador con popup
-    const marker = new mapboxgl.Marker({ 
-      color: '#0066cc',
-      scale: 1.2
-    })
-      .setLngLat([this.centro.lon, this.centro.lat])
-      .setPopup(
-        new mapboxgl.Popup({ offset: 25 }).setHTML(`
-          <div style="padding: 12px; font-family: Arial, sans-serif;">
-            <h6 style="margin: 0 0 8px 0; color: #0066cc; font-size: 14px; font-weight: bold;">
-               ${this.centro.nombre}
-            </h6>
-            <p style="margin: 4px 0; font-size: 12px; color: #555;">
-               ${this.centro.direccion || 'Sin dirección'}
-            </p>
-            <p style="margin: 4px 0; font-size: 12px; color: #555;">
-               ${this.centro.dmunic}, ${this.centro.dterre}
-            </p>
-            <p style="margin: 4px 0 0 0; font-size: 11px; color: #999;">
-               ${this.centro.lat.toFixed(4)}, ${this.centro.lon.toFixed(4)}
-            </p>
-          </div>
-        `)
-      )
-      .addTo(this.map);
-
-    // Abrir el popup automáticamente
-    marker.togglePopup();
-
-    console.log(' Marcador añadido correctamente');
+ngOnDestroy(): void { // Limpiar mapa al destruir el componente, si existe
+  if (this.map) {
+    this.map.remove();
   }
+}
 
   getEstadoClass(estado: string): string {
-    const clases: { [key: string]: string } = {
-      'Pendiente': 'badge bg-warning text-dark',
-      'Aceptada': 'badge bg-success',
-      'Cancelada': 'badge bg-danger',
-      'Conflicto': 'badge bg-secondary'
+    const clases: Record<string, string> = {
+      Pendiente: 'badge bg-warning text-dark',
+      Aceptada: 'badge bg-success',
+      Cancelada: 'badge bg-danger',
+      Conflicto: 'badge bg-secondary'
     };
     return clases[estado] || 'badge bg-info';
-  }
-
-  ngOnDestroy() {
-    // Limpiar el mapa al destruir el componente
-    if (this.map) {
-      this.map.remove();
-      console.log(' Mapa eliminado');
-    }
   }
 }

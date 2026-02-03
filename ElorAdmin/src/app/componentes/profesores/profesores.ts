@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Usuario } from '../../servicios/usuario';
 import { AuthService } from '../../servicios/auth';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-profesores',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './profesores.html',
   styleUrls: ['./profesores.css']
 })

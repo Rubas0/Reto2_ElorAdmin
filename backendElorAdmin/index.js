@@ -39,7 +39,7 @@ app.use(express.json()); // parsea JSON en el body para que pueda enviar datos c
 const db = mysql.createConnection({
   host: 'localhost',    // cambiar si usamos otra máquina
   user: 'root',
-  port: '3307',
+  port: '3308',
   password: '',
   database: 'reto2'
 });

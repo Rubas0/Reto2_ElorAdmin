@@ -10,14 +10,15 @@ import { firstValueFrom } from 'rxjs';
 /**
  * Servicio para gestionar las reuniones con el backend. Sirve para obtener, crear y actualizar reuniones.
  */
-export class reuniones {
-  // private apiUrl = 'http://localhost:3001';
-  private apiUrl = 'http://localhost:3000/api'; // usamso mismo backend que AuthService, pueto 3000 porque es el principal
+export class ReunionesService {
+   private apiUrl = 'http://localhost:3000/api'; // Backend principal 
+   private jsonServerUrl = 'http://localhost:3001'; // json-server para centros
   
   constructor(private http: HttpClient) {}
 
+  // Centros desde json-server
   getAllCentros() {
-    return firstValueFrom(this.http.get<any[]>(`${this.apiUrl}/centros`));
+    return firstValueFrom(this.http.get<any[]>(`${this.jsonServerUrl}/CENTROS`));
   }
 
   getAllReuniones() {

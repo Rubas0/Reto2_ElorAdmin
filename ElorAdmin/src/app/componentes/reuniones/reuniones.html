@@ -1,129 +1,90 @@
 <div class="container-fluid mt-4">
-  <div class="row mb-4">
+  <div class="row">
     <div class="col-12">
+      <!-- Botones de idioma -->
+      <div class="mb-3 d-flex gap-2 justify-content-end">
+        <button class="btn btn-outline-primary btn-sm" (click)="cambiarIdioma('es')" [disabled]="idioma === 'es'">Castellano</button>
+        <button class="btn btn-outline-success btn-sm" (click)="cambiarIdioma('eu')" [disabled]="idioma === 'eu'">Euskera</button>
+        <button class="btn btn-outline-secondary btn-sm" (click)="cambiarIdioma('en')" [disabled]="idioma === 'en'">English</button>
+      </div>
+
       <div class="d-flex justify-content-between align-items-center">
         <h2 class="text-primary">
-          <i class="bi bi-calendar-check"></i> Gestión de Reuniones
+          <i class="bi bi-calendar-check"></i> {{ textos[idioma].gestion }}
         </h2>
-       <button class="btn btn-success" (click)="abrirFormulario()">
-          <i class="bi bi-plus-circle"></i> Nueva Reunión
-       </button>
+        <button class="btn btn-success" (click)="abrirFormulario()">
+          <i class="bi bi-plus-circle"></i> {{ textos[idioma].nueva }}
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Filtros Encadenados -->
+  <!-- Filtros -->
   <div class="card mb-4 shadow-sm">
     <div class="card-header bg-primary text-white">
-      <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros de Centros</h5>
+      <h5 class="mb-0"><i class="bi bi-funnel"></i> {{ textos[idioma].filtros }}</h5>
     </div>
     <div class="card-body">
       <div class="row g-3">
-        <!-- Filtro Tipo de Centro -->
-        <div class="col-md-4">
-          <label class="form-label fw-bold">Tipo de Centro (DTITUC)</label>
-          <select 
-            class="form-select" 
-            [(ngModel)]="tipoCentroSeleccionado"
-            (change)="onTipoCentroChange()">
-            <option value="">-- Todos --</option>
-            <option *ngFor="let tipo of tiposCentro" [value]="tipo">
-              {{ tipo }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Filtro Territorio -->
-        <div class="col-md-4">
-          <label class="form-label fw-bold">Territorio (DTERRE)</label>
-          <select 
-            class="form-select" 
-            [(ngModel)]="territorioSeleccionado"
-            (change)="onTerritorioChange()"
-            [disabled]="territorios.length === 0">
-            <option value="">-- Seleccione --</option>
-            <option *ngFor="let territorio of territorios" [value]="territorio">
-              {{ territorio }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Filtro Municipio -->
-        <div class="col-md-4">
-          <label class="form-label fw-bold">Municipio (DMUNIC)</label>
-          <select 
-            class="form-select" 
-            [(ngModel)]="municipioSeleccionado"
-            (change)="onMunicipioChange()"
-            [disabled]="municipios.length === 0">
-            <option value="">-- Seleccione --</option>
-            <option *ngFor="let municipio of municipios" [value]="municipio">
-              {{ municipio }}
-            </option>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">{{ textos[idioma].tipoCentro }}</label>
+          <select class="form-select" [(ngModel)]="tipoCentroSeleccionado" (change)="onTipoCentroChange()">
+            <option value="">-- {{ textos[idioma].todos }} --</option>
+            <option *ngFor="let tipo of tiposCentro" [value]="tipo">{{ tipo }}</option>
           </select>
         </div>
       </div>
-
       <div class="mt-3">
         <span class="badge bg-info fs-6">
-          <i class="bi bi-list-check"></i> 
-          Total reuniones filtradas: {{ contarReuniones() }}
+          <i class="bi bi-list-check"></i> {{ textos[idioma].total }}: {{ contarReuniones() }}
         </span>
       </div>
     </div>
   </div>
 
-  <!-- Tabla de Reuniones Paginada -->
+  <!-- Tabla -->
   <div class="card shadow-sm">
     <div class="card-header bg-light">
-      <h5 class="mb-0">Listado de Reuniones</h5>
+      <h5 class="mb-0">{{ textos[idioma].tabla }}</h5>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
         <table class="table table-hover table-striped mb-0">
           <thead class="table-dark">
             <tr>
-              <th>Título</th>
-              <th>Fecha/Hora</th>
-              <th>Aula</th>
-              <th>Centro</th>
-              <th>Municipio</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th>{{ textos[idioma].titulo }}</th>
+              <th>{{ textos[idioma].fecha }}/{{ textos[idioma].hora }}</th>
+              <th>{{ textos[idioma].aula }}</th>
+              <th>{{ textos[idioma].centro }}</th>
+              <th>{{ textos[idioma].estado }}</th>
+              <th>{{ textos[idioma].acciones }}</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let reunion of filteredReuniones | paginate: { itemsPerPage: itemsPerPage, currentPage: p }">
               <td>
-                <strong>{{ reunion.titulo }}</strong>
-                <br>
+                <strong>{{ reunion.titulo }}</strong><br>
                 <small class="text-muted">{{ reunion.tema }}</small>
               </td>
               <td>
-                <i class="bi bi-calendar3"></i> {{ reunion.fecha }}
-                <br>
+                <i class="bi bi-calendar3"></i> {{ reunion.fecha }}<br>
                 <i class="bi bi-clock"></i> {{ reunion.hora }}
               </td>
               <td>{{ reunion.aula }}</td>
               <td>
-                <small>{{ reunion.centro?.nombre || 'N/A' }}</small>
-                <br>
+                <small>{{ reunion.centro?.nombre || 'N/A' }}</small><br>
                 <span class="badge bg-secondary">{{ reunion.centro?.dtituc }}</span>
               </td>
               <td>{{ reunion.centro?.dmunic }} ({{ reunion.centro?.dterre }})</td>
+              <td><span [class]="getEstadoClass(reunion.estado)">{{ reunion.estado }}</span></td>
               <td>
-                <span [class]="getEstadoClass(reunion.estado)">
-                  {{ reunion.estado }}
-                </span>
-              </td>
-              <td>
-                <button 
-                  class="btn btn-sm btn-primary me-1"
-                  [routerLink]="['/reunion-detalle', reunion.id]"
-                  title="Ver detalles y mapa">
-                  <i class="bi bi-geo-alt"></i> Ver Mapa
+                <button class="btn btn-sm btn-primary me-1" [routerLink]="['/reunion-detalle', reunion.id]" title="{{ textos[idioma].mapa }}">
+                  <i class="bi bi-geo-alt"></i> {{ textos[idioma].mapa }}
                 </button>
               </td>
+            </tr>
+            <tr *ngIf="filteredReuniones.length === 0">
+              <td colspan="7" class="text-center">{{ textos[idioma].noReuniones }}</td>
             </tr>
           </tbody>
         </table>
@@ -131,136 +92,10 @@
     </div>
     <div class="card-footer">
       <pagination-controls 
-        (pageChange)="p = $event"
-        previousLabel="Anterior"
-        nextLabel="Siguiente">
+        (pageChange)="p = $event" 
+        [previousLabel]="textos[idioma].anterior" 
+        [nextLabel]="textos[idioma].siguiente">
       </pagination-controls>
     </div>
   </div>
-
-  <!-- Modal de Crear Reunión -->
-<div class="modal-overlay" *ngIf="mostrarFormulario" (click)="cerrarFormulario()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h4><i class="bi bi-calendar-plus"></i> Nueva Reunión</h4>
-      <button class="btn-close" (click)="cerrarFormulario()"></button>
-    </div>
-    
-    <div class="modal-body">
-      <form>
-        <!-- Título -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Título *</label>
-          <input 
-            type="text" 
-            class="form-control" 
-            [(ngModel)]="nuevaReunion.titulo"
-            name="titulo"
-            placeholder="Ej: Revisión del Reto 2"
-            maxlength="100">
-        </div>
-
-        <!-- Tema -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Tema *</label>
-          <textarea 
-            class="form-control" 
-            [(ngModel)]="nuevaReunion.tema"
-            name="tema"
-            rows="3"
-            placeholder="Descripción breve..."
-            maxlength="500"></textarea>
-        </div>
-
-        <div class="row">
-          <!-- Fecha -->
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-bold">Fecha *</label>
-            <input 
-              type="date" 
-              class="form-control" 
-              [(ngModel)]="nuevaReunion.fecha"
-              name="fecha"
-              [min]="fechaMinima"
-              [max]="fechaMaxima">
-          </div>
-
-          <!-- Hora -->
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-bold">Hora *</label>
-            <select class="form-select" [(ngModel)]="nuevaReunion.hora" name="hora">
-              <option value="">-- Selecciona --</option>
-              <option value="08:00">08:00 - Hora 1</option>
-              <option value="09:00">09:00 - Hora 2</option>
-              <option value="10:00">10:00 - Hora 3</option>
-              <option value="11:30">11:30 - Hora 4</option>
-              <option value="12:30">12:30 - Hora 5</option>
-              <option value="13:30">13:30 - Hora 6</option>
-            </select>
-          </div>
-
-          <!-- Aula -->
-          <div class="col-md-4 mb-3">
-            <label class="form-label fw-bold">Aula *</label>
-            <input 
-              type="text" 
-              class="form-control" 
-              [(ngModel)]="nuevaReunion.aula"
-              name="aula"
-              placeholder="Ej: 201">
-          </div>
-        </div>
-
-        <div class="mb-3">
-  <label class="form-label fw-bold">
-    <i class="bi bi-geo-alt"></i> Centro Educativo (Ubicación) *
-  </label>
-  <select 
-    class="form-select" 
-    [(ngModel)]="nuevaReunion.centroId"
-    name="centroId">
-    <option [value]="15112">🏫 CIFP Elorrieta-Errekamari LHII (por defecto)</option>
-    <optgroup label="Otros centros cercanos">
-      <option 
-        *ngFor="let centro of centrosList | slice:0:20" 
-        [value]="centro.codigo">
-        {{ centro.nombre }} - {{ centro.dmunic }} ({{ centro.dterre }})
-      </option>
-    </optgroup>
-  </select>
-  <small class="text-muted">
-    💡 Las reuniones pueden celebrarse en cualquier centro educativo de Euskadi
-  </small>
-</div>
-
-        <!-- Alumno -->
-       <div class="mb-3">
-  <label class="form-label fw-bold">Alumno *</label>
-  <select class="form-select" [(ngModel)]="nuevaReunion.alumnoId" name="alumnoId">
-    <option [value]="0">-- Selecciona un alumno --</option>
-    <option *ngFor="let alumno of alumnos" [value]="alumno.id">
-      {{ alumno.apellidos }}, {{ alumno.nombre }}
-    </option>
-  </select>
-  <small class="text-muted" *ngIf="alumnos.length === 0">
-    ⚠️ No hay alumnos disponibles
-  </small>
-  <small class="text-success" *ngIf="alumnos.length > 0">
-    ✅ {{ alumnos.length }} alumnos disponibles
-  </small>
-</div>
-
-        <!-- Botones -->
-        <div class="d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-secondary" (click)="cerrarFormulario()">
-            <i class="bi bi-x-circle"></i> Cancelar
-          </button>
-          <button type="button" class="btn btn-success" (click)="guardarReunion()">
-            <i class="bi bi-save"></i> Crear Reunión
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 </div>

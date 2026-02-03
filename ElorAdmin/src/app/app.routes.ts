@@ -21,8 +21,8 @@ export const routes: Routes = [
   { path: 'admins', component: Admins, canActivate: [authGuard, roleGuard], data: { roles: ['admin', 'administrador', 'god'] } },
   { path: 'alumnos', component: Alumnos, canActivate: [authGuard, roleGuard], data: { roles: ['alumno'] } },
   { path: 'profesores', component: Profesores, canActivate: [authGuard, roleGuard], data: { roles: ['profesor'] } },
-  { path: 'reuniones', component: Reuniones }, // TODO: falta proteger esta ruta
-  { path: 'reunion-detalle/:id', component: ReunionDetalle }, // TODO: falta proteger esta ruta 
+  { path: 'reuniones', component: Reuniones, canActivate: [authGuard, roleGuard], data: { roles: ['profesor', 'admin', 'administrador', 'god'] } },
+  { path: 'reunion-detalle/:id', component: ReunionDetalle, canActivate: [authGuard, roleGuard], data: { roles: ['profesor', 'admin', 'administrador', 'god'] } }, // TODO: falta proteger esta ruta 
   { path: '**', redirectTo: 'login' } // cualquier otra ruta redirige a login
 ];
 

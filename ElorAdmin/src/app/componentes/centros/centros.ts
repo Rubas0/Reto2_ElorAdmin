@@ -7,5 +7,5 @@ import { Component } from '@angular/core';
   styleUrl: './centros.css',
 })
 export class Centros {
-
+  // de prueba, no la usaremos por ahora
 }
