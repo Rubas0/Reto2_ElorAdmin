@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -8,7 +9,7 @@ export class AuthService {
   private _user: any = null;
   private readonly baseUrl = 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     // Restaura sesión si hay usuario almacenado
     const stored = localStorage.getItem('user');
     if (stored) {
@@ -54,8 +55,14 @@ export class AuthService {
   }
 
   // Obtener usuario logueado
-  getLoggedUser(): any {
-    return this.user;
+   getLoggedUser() {
+    if (!this._user) {
+      const storedUser = sessionStorage.getItem('user');
+      if (storedUser) {
+        this._user = JSON.parse(storedUser);
+      }
+    }
+    return this._user;
   }
   // Getter del usuario actual (intenta recuperar de localStorage si no está en memoria)
   get user(): any {
@@ -89,9 +96,23 @@ export class AuthService {
   }
 
   // Logout
-  logout(): void {
+  logout() {
+    // Limpiar sessionStorage
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('token'); // Si usas token JWT
+    
+    // Limpiar variable local
     this._user = null;
     this._isLoggedIn = false;
     localStorage.removeItem('user');
+    
+    // Redirigir al login
+    this.router.navigate(['/login']);
   }
+
+    // Verificar si está logueado
+  isLoggedIn(): boolean {
+    return !!this.getLoggedUser();
+  }
+
 }

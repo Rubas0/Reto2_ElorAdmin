@@ -16,7 +16,7 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./admins.css'],
 })
 export class Admins implements OnInit {
-  // Paginación ✅
+  // Paginación 
   p: number = 1;
   itemsPerPage: number = 10;
 
@@ -295,7 +295,7 @@ export class Admins implements OnInit {
     });
   }
 
-  // Sistema de Notificaciones (Toast) ✅
+  // Sistema de Notificaciones (Toast) 
   mostrarNotificacion(mensaje: string, tipo: 'success' | 'error' | 'info'): void {
     this.mensajeToast = mensaje;
     this.tipoToast = tipo;

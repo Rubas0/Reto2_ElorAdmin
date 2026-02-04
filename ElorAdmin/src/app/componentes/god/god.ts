@@ -109,7 +109,7 @@ export class God implements OnInit {
   // }
 
     if (this.editando && this.adminEditId !== null) {
-      // Si no cambiamos password, evitar enviarla vacía
+      // Si no cambiamos password, evitamos enviarla vacía
       const data = { ...this.form, id: this.adminEditId, rol: 'admin' };
       if (!data.password) delete data.password;
 

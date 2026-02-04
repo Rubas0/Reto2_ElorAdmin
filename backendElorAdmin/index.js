@@ -482,6 +482,6 @@ app.put('/api/reuniones/:id', (req, res) => {
 
 
 const PORT = 3000;
-app.listen(PORT, () => {
+app.listen(PORT, () => { // abrimos sockets para escuchar en el puerto 3000
   console.log(`Servidor listo en http://localhost:${PORT}`);
 });

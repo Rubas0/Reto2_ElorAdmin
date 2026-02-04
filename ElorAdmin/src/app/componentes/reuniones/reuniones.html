@@ -2,41 +2,86 @@
   <div class="row">
     <div class="col-12">
       <!-- Botones de idioma -->
-      <div class="mb-3 d-flex gap-2 justify-content-end">
-        <button class="btn btn-outline-primary btn-sm" (click)="cambiarIdioma('es')" [disabled]="idioma === 'es'">Castellano</button>
-        <button class="btn btn-outline-success btn-sm" (click)="cambiarIdioma('eu')" [disabled]="idioma === 'eu'">Euskera</button>
-        <button class="btn btn-outline-secondary btn-sm" (click)="cambiarIdioma('en')" [disabled]="idioma === 'en'">English</button>
+      <div class="mb-3 d-flex gap-2 justify-content-between align-items-center">
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary btn-sm" (click)="cambiarIdioma('es')" [disabled]="idioma === 'es'">Castellano</button>
+          <button class="btn btn-outline-success btn-sm" (click)="cambiarIdioma('eu')" [disabled]="idioma === 'eu'">Euskera</button>
+          <button class="btn btn-outline-secondary btn-sm" (click)="cambiarIdioma('en')" [disabled]="idioma === 'en'">English</button>
+        </div>
+        
+        <!-- Botón cerrar sesión -->
+        <button class="btn btn-danger btn-sm" (click)="cerrarSesion()" type="button">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </button>
       </div>
-
       <div class="d-flex justify-content-between align-items-center">
         <h2 class="text-primary">
           <i class="bi bi-calendar-check"></i> {{ textos[idioma].gestion }}
         </h2>
-        <button class="btn btn-success" (click)="abrirFormulario()">
+        <!-- Botón que abre el modal -->
+        <button class="btn btn-success" (click)="abrirFormulario()" type="button">
           <i class="bi bi-plus-circle"></i> {{ textos[idioma].nueva }}
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Filtros -->
+  <!-- Filtros Encadenados -->
   <div class="card mb-4 shadow-sm">
     <div class="card-header bg-primary text-white">
-      <h5 class="mb-0"><i class="bi bi-funnel"></i> {{ textos[idioma].filtros }}</h5>
+      <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros de Centros</h5>
     </div>
     <div class="card-body">
       <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label fw-bold">{{ textos[idioma].tipoCentro }}</label>
-          <select class="form-select" [(ngModel)]="tipoCentroSeleccionado" (change)="onTipoCentroChange()">
-            <option value="">-- {{ textos[idioma].todos }} --</option>
-            <option *ngFor="let tipo of tiposCentro" [value]="tipo">{{ tipo }}</option>
+        <!-- Filtro Tipo de Centro -->
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Tipo de Centro (DTITUC)</label>
+          <select 
+            class="form-select" 
+            [(ngModel)]="tipoCentroSeleccionado"
+            (change)="onTipoCentroChange()">
+            <option value="">-- Todos --</option>
+            <option *ngFor="let tipo of tiposCentro" [value]="tipo">
+              {{ tipo }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Filtro Territorio -->
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Territorio (DTERRE)</label>
+          <select 
+            class="form-select" 
+            [(ngModel)]="territorioSeleccionado"
+            (change)="onTerritorioChange()"
+            [disabled]="territorios.length === 0">
+            <option value="">-- Seleccione --</option>
+            <option *ngFor="let territorio of territorios" [value]="territorio">
+              {{ territorio }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Filtro Municipio -->
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Municipio (DMUNIC)</label>
+          <select 
+            class="form-select" 
+            [(ngModel)]="municipioSeleccionado"
+            (change)="onMunicipioChange()"
+            [disabled]="municipios.length === 0">
+            <option value="">-- Seleccione --</option>
+            <option *ngFor="let municipio of municipios" [value]="municipio">
+              {{ municipio }}
+            </option>
           </select>
         </div>
       </div>
+
       <div class="mt-3">
         <span class="badge bg-info fs-6">
-          <i class="bi bi-list-check"></i> {{ textos[idioma].total }}: {{ contarReuniones() }}
+          <i class="bi bi-list-check"></i> 
+          Total reuniones filtradas: {{ contarReuniones() }}
         </span>
       </div>
     </div>
@@ -75,7 +120,6 @@
                 <small>{{ reunion.centro?.nombre || 'N/A' }}</small><br>
                 <span class="badge bg-secondary">{{ reunion.centro?.dtituc }}</span>
               </td>
-              <td>{{ reunion.centro?.dmunic }} ({{ reunion.centro?.dterre }})</td>
               <td><span [class]="getEstadoClass(reunion.estado)">{{ reunion.estado }}</span></td>
               <td>
                 <button class="btn btn-sm btn-primary me-1" [routerLink]="['/reunion-detalle', reunion.id]" title="{{ textos[idioma].mapa }}">
@@ -84,7 +128,7 @@
               </td>
             </tr>
             <tr *ngIf="filteredReuniones.length === 0">
-              <td colspan="7" class="text-center">{{ textos[idioma].noReuniones }}</td>
+              <td colspan="6" class="text-center">{{ textos[idioma].noReuniones }}</td>
             </tr>
           </tbody>
         </table>
@@ -98,4 +142,107 @@
       </pagination-controls>
     </div>
   </div>
+
+  <!--  MODAL DE CREACIÓN DE REUNIÓN -->
+  <div *ngIf="mostrarFormulario" class="modal d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">
+            <i class="bi bi-calendar-plus"></i> Nueva Reunión
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="cerrarFormulario()"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="guardarReunion()">
+            <!-- Título -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">Título</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="nuevaReunion.titulo" 
+                name="titulo"
+                placeholder="Ej: Revisión de notas"
+                required>
+            </div>
+
+            <!-- Tema -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">Tema</label>
+              <textarea 
+                class="form-control" 
+                [(ngModel)]="nuevaReunion.tema" 
+                name="tema"
+                rows="3"
+                placeholder="Breve descripción"
+                required></textarea>
+            </div>
+
+            <!-- Fecha y Hora -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Fecha</label>
+                <input 
+                  type="date" 
+                  class="form-control" 
+                  [(ngModel)]="nuevaReunion.fecha" 
+                  name="fecha"
+                  [min]="fechaMinima"
+                  [max]="fechaMaxima"
+                  required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Hora</label>
+                <input 
+                  type="time" 
+                  class="form-control" 
+                  [(ngModel)]="nuevaReunion.hora" 
+                  name="hora"
+                  required>
+              </div>
+            </div>
+
+            <!-- Aula -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">Aula</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="nuevaReunion.aula" 
+                name="aula"
+                placeholder="Ej: Aula 101"
+                required>
+            </div>
+
+            <!-- Alumno -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">Alumno</label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="nuevaReunion.alumnoId" 
+                name="alumnoId"
+                required>
+                <option [value]="0">-- Selecciona un alumno --</option>
+                <option *ngFor="let alumno of alumnos" [value]="alumno.id">
+                  {{ alumno.nombre }} {{ alumno.apellidos }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex gap-2 justify-content-end">
+              <button type="button" class="btn btn-secondary" (click)="cerrarFormulario()">
+                <i class="bi bi-x-circle"></i> Cancelar
+              </button>
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle"></i> Guardar Reunión
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>

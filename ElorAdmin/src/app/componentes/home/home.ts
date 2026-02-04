@@ -29,8 +29,8 @@ export class Home implements OnInit {
   }
 
   cargarProfesores() {
-    this.usuarioService.getUsuarios('profesor', this.busqueda).subscribe({
-      next: (res) => (this.profesores = res),
+    this.usuarioService.getUsuarios('profesor', this.busqueda).subscribe({ 
+      next: (res) => (this.profesores = res), 
       error: (err) => console.error('Error al cargar profesores:', err)
     });
   }

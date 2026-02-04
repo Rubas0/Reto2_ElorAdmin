@@ -21,7 +21,7 @@ export class LoginComponent {
   submitted: boolean = false
   showPassword: boolean = false;
 
-  // Paths inline del icono ojo
+  // Paths inline del icono ojo, para no depender de ficheros externos
   eyePath = 'M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12zm11 4a4 4 0 1 0 0-8 4 4 0 0 0 0 8z';
   eyeOffPath = 'M3.707 2.293 21.707 20.293l-1.414; 1.414-3.016-3.016C15.768 20.288 13.97 21 12 21 5 21 1 12 1 12a23.5 23.5 0 0 1 6.116-7.382L2.293 3.707l1.414-1.414zm8.293 6a4 4 0 0 1 3.999 3.799l-1.62-1.62a2.5 2.5 0 0 0-3.556-3.556l-1.62-1.62A4 4 0 0 1 12 8zm-8.76 3.933A21.7 21.7 0 0 0 12 19c1.646 0 3.192-.446 4.594-1.196l-3.243-3.243A4 4 0 0 1 8.44 9.91l-3.907-3.907a21.7 21.7 0 0 0-1 1.93c-.403.901-.706 1.705-.999 2.9z';
 
@@ -30,6 +30,7 @@ export class LoginComponent {
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
+
 
   login() {
     this.submitted = true;
@@ -65,8 +66,8 @@ export class LoginComponent {
              resp.usuario?.tipo_id === 4 ? 'alumno' : '')
           ).toLowerCase();
 
-          if (rol === 'god') {
-            this.router.navigate(['/god']);
+          if (rol === 'god') { // administrador supremo y redierccionamientos
+            this.router.navigate(['/god']); 
           } else if (rol === 'admin' || rol === 'administrador' || rol === 'administradores' || rol === 'secretaria') {
             this.router.navigate(['/admins']);
           } else if (rol === 'profesor') {
@@ -88,7 +89,7 @@ export class LoginComponent {
   }
 
   forgotPassword() {
-    // En el futuro: Hacer una llamada al backend (index.js) que inicie el proceso real.
+    // TODO: Hacer una llamada al backend (index.js) que inicie el proceso real.
     this.error = 'Funcionalidad no implementada, contacta con Secretaría.';
   }
 }

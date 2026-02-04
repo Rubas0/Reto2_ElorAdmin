@@ -48,7 +48,7 @@ export class Profesores implements OnInit {
       next: (res) => {
         this.profesores = res || [];
         this.loading = false;
-        console.log('✅ Profesores cargados:', this.profesores.length);
+        console.log(' Profesores cargados:', this.profesores.length);
       },
       error: (err) => {
         console.error('Error al cargar profesores:', err);
@@ -67,7 +67,7 @@ export class Profesores implements OnInit {
       next: (res) => {
         this.alumnos = res || []; //Asegura que siempre sea un array
         this.loading = false;
-        console.log('✅ Alumnos cargados:', this.alumnos.length);
+        console.log(' Alumnos cargados:', this.alumnos.length);
       },
       error: (err) => {
         console.error('Error al cargar alumnos:', err);
@@ -78,6 +78,7 @@ export class Profesores implements OnInit {
     });
   }
 
+  // true = profesores, false = alumnos
   cambiarVista(tipo: 'profesor' | 'alumno'): void {
     this.mostrarProfesores = tipo === 'profesor';
     this.busqueda = '';
@@ -90,6 +91,7 @@ export class Profesores implements OnInit {
     }
   }
 
+  // Realiza la búsqueda según el tipo de vista actual
   buscar(): void {
     this.error = '';
     if (this.mostrarProfesores) {
@@ -99,6 +101,7 @@ export class Profesores implements OnInit {
     }
   }
 
+  // Limpia el campo de búsqueda y recarga la lista
   limpiarBusqueda(): void {
     this.busqueda = '';
     this.buscar();

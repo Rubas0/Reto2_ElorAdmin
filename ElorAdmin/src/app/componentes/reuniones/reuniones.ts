@@ -11,13 +11,27 @@ import { ActivatedRoute } from '@angular/router';
 
 interface Centro {
   id?: number;
-  codigo: string;
-  nombre: string;
-  dtituc: string;
-  dterre: string;
-  dmunic: string;
-  lat: number;
-  lon: number;
+  CCEN: number;          
+  NOM: string;            
+  NOME?: string;        
+  DTITUC: string;      
+  DTITUE?: string;     
+  DTERRC: string;         
+  DTERRE?: string;      
+  DMUNIC: string;   
+  DMUNIE?: string;        
+  LATITUD: number;       
+  LONGITUD: number;       
+  DOMI?: string;   
+  
+   // Campos normalizados para facilitar el filtrado y la visualización
+  codigo?: string;
+  nombre?: string;
+  dtituc?: string;
+  dterre?: string;
+  dmunic?: string;
+  lat?: number;
+  lon?: number;
   direccion?: string;
 }
 
@@ -43,8 +57,6 @@ interface Reunion {
   styleUrls: ['./reuniones.css'],
 })
 export class Reuniones implements OnInit {
-
-
 
   // Parte de idiomas con i18n simple, texto en objetos
    idioma: 'es'|'eu'|'en' = 'es'; // Idioma actual
@@ -140,6 +152,11 @@ export class Reuniones implements OnInit {
   tipoCentroSeleccionado: string = '';
   territorioSeleccionado: string = '';
   municipioSeleccionado: string = '';
+
+    // PRUEBA SIMPLE DE CARGA SIN FILTRADO
+  centrosPrueba: any[] = [];
+  loadingCentrosPrueba = false;
+  errorCentrosPrueba = '';
 
   // Nuevas propiedades para el formulario de creación de reunión
   mostrarFormulario: boolean = false;
@@ -369,13 +386,25 @@ async guardarReunion() {
       // Cargar centros desde EuskadiLatLon.json
       const response = await fetch('http://localhost:3001/CENTROS');
       this.centrosList = await response.json();
+
+      const centrosData = await response.json();
       
-      // Normalizar territorios
-      this.centrosList.forEach((centro, index) => {
-        centro.id = index + 1; // Asignar ID si no existe
-        const territorioNormalizado = this.normalizarTerritorio(centro.dterre);
-        centro.dterre = territorioNormalizado;
-      });
+      // Normalizar territorios a la estructura del JSON a nuestro formato 
+    this.centrosList = centrosData.map((c: any, index: number) => {
+      const centroNormalizado = {
+        ...c,
+        id: c.id || c.CCEN || index + 1,
+        codigo: String(c.CCEN),           // ✅ CCEN es el código
+        nombre: c.NOM || c.NOME || 'Sin nombre',
+        dtituc: (c.DTITUC || '').trim() || 'Sin categoría',
+        dterre: this.normalizarTerritorio(c.DTERRC || c.DTERRE || ''),
+        dmunic: (c.DMUNIC || '').trim() || 'Sin municipio',
+        lat: c.LATITUD,
+        lon: c.LONGITUD,
+        direccion: c.DOMI || 'Sin dirección'
+      };
+      return centroNormalizado;
+    });
 
       // Cargar reuniones desde json-server
       this.reunionesList = await this.reunionesService.getAllReuniones();
@@ -415,20 +444,21 @@ async guardarReunion() {
   return this.MAPA_TERRITORIOS[key] || territorio.trim();
 }
 
+// Obtener listas únicas para filtros, con limpieza de datos y orden alfabético
 getTiposCentroUnicos(): string[] {
   const tipos = new Set(
     this.centrosList
-      .map(c => (c.dtituc || '').trim())
-      .filter(Boolean) // Elimina valores vacíos
+      .map(c => c.dtituc)
+      .filter((t): t is string => !!t) //  Filtrar undefined
   );
-  return ['Todos', ...Array.from(tipos)].sort(); // Añadir opción "Todos" al inicio
+  return Array.from(tipos).sort();
 }
 
 getTerritoriosUnicos(): string[] {
   const set = new Set(
     this.centrosList
-      .map(c => c.dterre || 'Sin territorio') // Asignar 'Sin territorio' si está vacío
-      .filter(Boolean)
+      .map(c => c.dterre)
+      .filter((t): t is string => !!t) // Filtrar undefined
   );
   return Array.from(set).sort();
 }
@@ -436,8 +466,8 @@ getTerritoriosUnicos(): string[] {
 getMunicipiosGlobales(): string[] {
   const set = new Set(
     this.centrosList
-      .map(c => (c.dmunic || '').trim()) // Trim para limpieza, usamos '' si es null/undefined
-      .filter(Boolean)
+      .map(c => c.dmunic)
+      .filter((m): m is string => !!m) // Filtrar undefined
   );
   return Array.from(set).sort();
 }
@@ -462,37 +492,52 @@ getMunicipiosGlobales(): string[] {
     this.aplicarFiltros();
   }
 
-  actualizarTerritorios() {
-    if (!this.tipoCentroSeleccionado || this.tipoCentroSeleccionado === 'Todos') {
-      this.territorios = this.getTerritoriosUnicos();
-    } else {
-      const centrosFiltrados = this.centrosList.filter(
-        c => c.dtituc === this.tipoCentroSeleccionado
-      );
-      const territorios = new Set(centrosFiltrados.map(c => c.dterre));
-      this.territorios = Array.from(territorios).sort();
-    }
+  // Actualizar lista de territorios disponibles según el tipo de centro seleccionado
+actualizarTerritorios() {
+  if (!this.tipoCentroSeleccionado) {
+    this.territorios = this.getTerritoriosUnicos();
+  } else {
+    const centrosFiltrados = this.centrosList.filter(
+      c => c.dtituc === this.tipoCentroSeleccionado
+    );
+    const territorios = new Set(
+      centrosFiltrados
+        .map(c => c.dterre)
+        .filter((t): t is string => !!t) // Filtrar undefined y hacer type guard,  !!t: Convierte el valor a booleano. Si es undefined, null o '', devuelve false.
+
+    );
+    this.territorios = Array.from(territorios).sort();
+  }
+  console.log(' Territorios actualizados:', this.territorios);
+}
+
+// Actualizar lista de municipios disponibles según el territorio seleccionado
+actualizarMunicipios() {
+  let centrosFiltrados = this.centrosList;
+
+  if (this.tipoCentroSeleccionado) {
+    centrosFiltrados = centrosFiltrados.filter(
+      c => c.dtituc === this.tipoCentroSeleccionado
+    );
   }
 
-  actualizarMunicipios() {
-    let centrosFiltrados = this.centrosList;
-
-    if (this.tipoCentroSeleccionado && this.tipoCentroSeleccionado !== 'Todos') {
-      centrosFiltrados = centrosFiltrados.filter(
-        c => c.dtituc === this.tipoCentroSeleccionado
-      );
-    }
-
-    if (this.territorioSeleccionado) {
-      centrosFiltrados = centrosFiltrados.filter(
-        c => c.dterre === this.territorioSeleccionado
-      );
-    }
-
-    const municipios = new Set(centrosFiltrados.map(c => c.dmunic));
-    this.municipios = Array.from(municipios).sort();
+  if (this.territorioSeleccionado) {
+    centrosFiltrados = centrosFiltrados.filter(
+      c => c.dterre === this.territorioSeleccionado
+    );
   }
 
+  // Obtener municipios únicos del conjunto filtrado
+  const municipios = new Set(
+    centrosFiltrados
+      .map(c => c.dmunic) // Obtener municipio con map y luego filtrar undefined
+      .filter((m): m is string => !!m) // Type guard que elimina undefined
+  );
+  this.municipios = Array.from(municipios).sort();
+  console.log(' Municipios actualizados:', this.municipios.length);
+}
+
+// Aplicar filtros a la lista de reuniones, actualizando filteredReuniones
   aplicarFiltros() {
     this.filteredReuniones = this.reunionesList.filter(reunion => {
       if (!reunion.centro) return false;
@@ -520,6 +565,12 @@ getMunicipiosGlobales(): string[] {
   contarReuniones(): number {
     return this.filteredReuniones.length;
   }
+
+  cerrarSesion() {
+  if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+    this.AuthService.logout(); // Cerrar sesión
+  }
+}
 
   /**
    * Obtener la clase CSS correspondiente al estado de una reunión. 
